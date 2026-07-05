@@ -286,10 +286,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     banner.style.borderColor = '#FCA5A5';
                     bannerIcon.style.color = 'var(--danger)';
                     bannerIcon.className = 'fa-solid fa-triangle-exclamation';
-                    // ⚠️ Recuerda cambiar la palabra "minutos" a "días" para producción
+                    // Recuerda cambiar la palabra "minutos" a "días" para producción
                     bannerText.innerHTML = `<strong>⚠️ ¡Aviso Urgente!</strong><br>Quedan ${unidadesRestantes} minutos de prueba.`;
                 } else {
-                    // ⚠️ Recuerda cambiar la palabra "minutos" a "días" para producción
+                    // Recuerda cambiar la palabra "minutos" a "días" para producción
                     bannerText.innerHTML = `<strong>Periodo de prueba</strong><br>Quedan ${unidadesRestantes} minutos.`;
                 }
             }
