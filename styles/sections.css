@@ -1,0 +1,98 @@
+/* =========================================
+   SECCIÓN: CÓMO FUNCIONA
+========================================= */
+.how-it-works {
+  padding: 5rem 2rem;
+  background-color: var(--white);
+  text-align: center;
+}
+
+.steps-container {
+  display: grid;
+  /* Esto hace que las tarjetas se adapten solas al móvil o PC */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.step-card {
+  background-color: var(--bg);
+  padding: 2.5rem 2rem;
+  border-radius: 20px;
+  text-align: center;
+  transition: var(--transition);
+  border: 1px solid var(--border);
+}
+
+.step-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+.step-icon {
+  width: 80px;
+  height: 80px;
+  background-color: var(--accent);
+  color: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  margin: 0 auto 1.5rem auto;
+  box-shadow: 0 8px 16px rgba(243, 153, 133, 0.3);
+  /* Sombra coral */
+}
+
+.step-card h3 {
+  color: var(--primary);
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+}
+
+.step-card p {
+  color: var(--text-light);
+  font-size: 1rem;
+}
+
+/* =========================================
+   SECCIÓN: PARA FISIOTERAPEUTAS
+========================================= */
+.for-physios {
+  padding: 6rem 2rem;
+  background-color: var(--primary);
+  color: var(--white);
+  text-align: center;
+}
+
+.for-physios h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--white);
+}
+
+.for-physios p {
+  max-width: 700px;
+  margin: 0 auto 2.5rem auto;
+  font-size: 1.1rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.cta-button {
+  display: inline-block;
+  background-color: var(--accent);
+  color: var(--white);
+  padding: 1rem 2.5rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: var(--transition);
+}
+
+.cta-button:hover {
+  background-color: var(--accent-hover);
+  transform: scale(1.05);
+}

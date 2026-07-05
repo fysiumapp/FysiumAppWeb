@@ -79,10 +79,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn) btn.textContent = "Guardando...";
 
         try {
+            let fisioIdParaGuardar = currentUser.id;
+            if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+                const fisioSelect = document.getElementById('sessionFisioSelect');
+                if (fisioSelect && fisioSelect.value) {
+                    fisioIdParaGuardar = fisioSelect.value;
+                } else {
+                    alert("Debes seleccionar un fisioterapeuta para asignarle la cita.");
+                    if (btn) btn.textContent = "Guardar Sesión";
+                    return;
+                }
+            }
+
             const { error } = await supabaseClient
                 .from('horarios_disponibles')
                 .insert([{
-                    fisio_id: currentUser.id,
+                    fisio_id: fisioIdParaGuardar,
                     dia: dia,
                     hora: inicio,
                     hora_fin: fin,
@@ -99,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { data: listaFavoritos } = await supabaseClient
                     .from('favoritos')
                     .select('user_id')
-                    .eq('fisio_id', currentUser.id);
+                    .eq('fisio_id', fisioIdParaGuardar);
 
                 if (listaFavoritos && listaFavoritos.length > 0) {
                     const idsPacientes = listaFavoritos.map(f => f.user_id);
@@ -165,23 +177,52 @@ window.cargarCalendarioMes = async function () {
 
     // Limpieza automática
     const hoyStr = formatearFecha(new Date());
-    await supabaseClient.from('horarios_disponibles').delete().eq('fisio_id', currentUser.id).eq('estado', 'libre').lt('dia', hoyStr);
+
+    let listaIdsFisios = [currentUser.id];
+    let mapFisios = {}; // Para guardar nombres de fisios
+
+    if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+        const { data: fisiosData } = await supabaseClient
+            .from('fisios')
+            .select('user_id, nombre')
+            .eq('clinica_id', window.currentProfileData.clinicaDataId);
+
+        if (fisiosData && fisiosData.length > 0) {
+            listaIdsFisios = fisiosData.map(f => f.user_id);
+            fisiosData.forEach(f => mapFisios[f.user_id] = f.nombre);
+        } else {
+            // No tiene fisios, calendario vacío
+            monthAppointments = [];
+            renderizarGridMes();
+            renderizarDiaSeleccionado();
+            return;
+        }
+    }
+
+    // Borramos los libres pasados (si es clínica, para todos sus fisios)
+    await supabaseClient.from('horarios_disponibles').delete()
+        .in('fisio_id', listaIdsFisios)
+        .eq('estado', 'libre')
+        .lt('dia', hoyStr);
 
     // Rango del mes
     const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
     const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
 
-    // MODIFICACIÓN: Solucionado el error silencioso de la tabla relacional
     const { data, error } = await supabaseClient
         .from('horarios_disponibles')
-        .select('*') // Consulta plana sin joins problemáticos
-        .eq('fisio_id', currentUser.id)
+        .select('*')
+        .in('fisio_id', listaIdsFisios)
         .gte('dia', formatearFecha(startOfMonth))
         .lte('dia', formatearFecha(endOfMonth))
         .neq('estado', 'cancelado')
         .order('hora', { ascending: true });
 
     if (!error && data) {
+        // Asignamos nombre del fisio si es clinica
+        if (window.currentProfileData.rol === 'clinica') {
+            data.forEach(c => { c.nombre_fisio = mapFisios[c.fisio_id] || 'Desconocido'; });
+        }
         // Segundo paso ultra seguro: Si hay pacientes de App, traemos sus nombres
         const clienteIds = [...new Set(data.filter(c => c.cliente_id && !c.nombre_paciente).map(c => c.cliente_id))];
         if (clienteIds.length > 0) {
@@ -271,9 +312,15 @@ function renderizarDiaSeleccionado() {
         // El nombre ya viene inyectado con el arreglo de arriba
         const patientName = s.nombre_paciente || 'Paciente';
 
+        let fisioBadge = '';
+        if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+            fisioBadge = `<div style="font-size:0.75rem; color:var(--primary); font-weight:600;"><i class="fa-solid fa-user-doctor"></i> ${s.nombre_fisio}</div>`;
+        }
+
         let content = `
             <div style="flex:1">
                 <div class="session-time">${s.hora} - ${s.hora_fin}</div>
+                ${fisioBadge}
                 <div class="session-status">${s.estado === 'reservado' ? `RESERVADO: ${patientName}` : 'LIBRE'}</div>
                 <div class="session-price">${s.precio}€</div>
             </div>
@@ -345,10 +392,22 @@ window.deleteSession = async function (id) {
 
 async function cargarPacientesParaModal() {
     const lista = document.getElementById('listaPacientesGuardados');
+
+    let listaIdsFisios = [currentUser.id];
+    if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+        const { data: fisiosData } = await supabaseClient
+            .from('fisios')
+            .select('user_id')
+            .eq('clinica_id', window.currentProfileData.clinicaDataId);
+        if (fisiosData && fisiosData.length > 0) {
+            listaIdsFisios = fisiosData.map(f => f.user_id);
+        }
+    }
+
     const { data: misPacs } = await supabaseClient
         .from('mis_pacientes')
         .select('cliente_id, auth_user(username, foto_perfil_url)')
-        .eq('fisio_id', currentUser.id);
+        .in('fisio_id', listaIdsFisios);
 
     lista.innerHTML = misPacs.map(p => `
         <li onclick="seleccionarPaciente('${p.auth_user.username}')" style="cursor:pointer; padding:10px; border-bottom:1px solid #eee">
@@ -463,11 +522,22 @@ window.cargarPacientesParaModal = async function () {
     const lista = document.getElementById('listaPacientesGuardados');
     if (!lista) return;
 
+    let listaIdsFisios = [currentUser.id];
+    if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+        const { data: fisiosData } = await supabaseClient
+            .from('fisios')
+            .select('user_id')
+            .eq('clinica_id', window.currentProfileData.clinicaDataId);
+        if (fisiosData && fisiosData.length > 0) {
+            listaIdsFisios = fisiosData.map(f => f.user_id);
+        }
+    }
+
     // Traemos los datos APLICANDO EL FILTRO DE ACTIVOS (Borrado Lógico)
     const { data: misPacs } = await supabaseClient
         .from('mis_pacientes')
         .select('cliente_id, auth_user(username, foto_perfil_url)')
-        .eq('fisio_id', currentUser.id)
+        .in('fisio_id', listaIdsFisios)
         .eq('activo', true); // <-- AQUÍ ESTÁ LA LÍNEA MÁGICA
 
     if (!misPacs) return;
@@ -558,7 +628,12 @@ window.finalizarReserva = async function () {
     const sessionId = modal.dataset.sessionId;
 
     const nombre = document.getElementById('nuevoNombre').value.trim();
-    const telefono = document.getElementById('nuevoTelefono').value.trim();
+
+    // LÓGICA DE PREFIJOS
+    const rawPhone = document.getElementById('nuevoTelefono').value.trim();
+    const prefijo = document.getElementById('reserva-prefix').innerText;
+    const telefono = rawPhone ? prefijo + rawPhone : null;
+
     const email = document.getElementById('nuevoEmail').value.trim();
     const fechaNac = document.getElementById('nuevoFechaNac').value.trim();
 
@@ -587,10 +662,18 @@ window.finalizarReserva = async function () {
 
         if (errorUsuario && errorUsuario.code !== '23505') throw errorUsuario;
 
-        // 2. Vincularlo al Fisio
+        // 2. Vincularlo al Fisio (o al primer fisio de la clinica, o al seleccionado si hubiera selector, pero en "Mis Pacientes" el modal modalAddSessionFisioSelect no existe, lo vinculamos al fisio de la sesión)
+
+        let fisioDestino = currentUser.id;
+        if (window.currentProfileData.rol === 'clinica') {
+            // Buscamos a quien pertenece la sesión seleccionada para vincular el paciente
+            const { data: citaInfo } = await supabaseClient.from('horarios_disponibles').select('fisio_id').eq('id', sessionId).single();
+            if (citaInfo) fisioDestino = citaInfo.fisio_id;
+        }
+
         await supabaseClient
             .from('mis_pacientes')
-            .insert([{ fisio_id: currentUser.id, cliente_id: idSupabaseFantasma }]);
+            .insert([{ fisio_id: fisioDestino, cliente_id: idSupabaseFantasma }]);
 
         // 3. Reservar la cita
         const { error: errorCita } = await supabaseClient

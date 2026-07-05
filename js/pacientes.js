@@ -30,7 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const nombre = document.getElementById('np-name').value.trim();
         const email = document.getElementById('np-email').value.trim();
-        const phone = document.getElementById('np-phone').value.trim();
+
+        // LÓGICA DE PREFIJOS
+        const rawPhone = document.getElementById('np-phone').value.trim();
+        const prefijo = document.getElementById('np-prefix').innerText;
+        const phone = rawPhone ? prefijo + rawPhone : null;
 
         // AÑADIDO: Capturamos la fecha de nacimiento si el elemento existe
         const dobInput = document.getElementById('np-dob');
@@ -94,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Búsqueda
     document.getElementById('searchPatientInput').addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
-        
+
         if (val.trim() === '') {
             // Mostrar solo activos si no hay búsqueda
             const activos = window.allMyPatients.filter(u => {
@@ -188,8 +192,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { error } = await supabaseClient.from('planes_recuperacion').update(dataPayload).eq('id', currentPlanId);
                 if (error) throw error;
             } else {
+                let planFisioId = currentUser.id;
+                const rel = window.misPacientesRel ? window.misPacientesRel.find(r => r.cliente_id === currentPatientId) : null;
+                if (rel && rel.fisio_id) planFisioId = rel.fisio_id;
+
                 const { data, error } = await supabaseClient.from('planes_recuperacion').insert([{
-                    fisio_id: currentUser.id,
+                    fisio_id: planFisioId,
                     cliente_id: currentPatientId,
                     ...dataPayload
                 }]).select('id').single();
@@ -198,8 +206,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Insertar en historial
+            let histFisioId = currentUser.id;
+            const relHist = window.misPacientesRel ? window.misPacientesRel.find(r => r.cliente_id === currentPatientId) : null;
+            if (relHist && relHist.fisio_id) histFisioId = relHist.fisio_id;
+
             await supabaseClient.from('historial_seguimiento').insert([{
-                fisio_id: currentUser.id,
+                fisio_id: histFisioId,
                 cliente_id: currentPatientId,
                 ejercicios: ejerciciosStr,
                 tratamiento_privado: textoPrivado,
@@ -289,7 +301,7 @@ function renderRecommendationsGrid() {
     grid.appendChild(newCard);
 }
 
-window.renderizarPacientesList = function(usuariosAMostrar) {
+window.renderizarPacientesList = function (usuariosAMostrar) {
     const list = document.getElementById('patientsList');
     list.innerHTML = '';
 
@@ -303,15 +315,27 @@ window.renderizarPacientesList = function(usuariosAMostrar) {
         card.className = 'patient-card';
         card.style.cursor = 'pointer';
 
-        let avatarHtml = `<div class="avatar">${(u.username||'P').charAt(0).toUpperCase()}</div>`;
+        let avatarHtml = `<div class="avatar">${(u.username || 'P').charAt(0).toUpperCase()}</div>`;
         if (u.foto_perfil_url) {
             avatarHtml = `<img src="${u.foto_perfil_url}" alt="${u.username}" class="avatar" style="object-fit:cover">`;
+        }
+
+        let fisioBadge = '';
+        if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+            const rel = window.misPacientesRel ? window.misPacientesRel.find(r => r.cliente_id === u.id_supabase) : null;
+            if (rel) {
+                const nombreFisio = window.mapFisiosPacientes ? window.mapFisiosPacientes[rel.fisio_id] : null;
+                if (nombreFisio) {
+                    fisioBadge = `<div style="font-size:0.75rem; color:var(--primary); font-weight:600;"><i class="fa-solid fa-user-doctor"></i> ${nombreFisio}</div>`;
+                }
+            }
         }
 
         card.innerHTML = `
             ${avatarHtml}
             <div class="patient-info">
                 <div class="patient-name">${u.username || 'Paciente'}</div>
+                ${fisioBadge}
                 <div class="patient-email">${u.email || 'Sin correo'}</div>
             </div>
             <div style="color:var(--text-light)"><i class="fa-solid fa-chevron-right"></i></div>
@@ -327,11 +351,28 @@ window.cargarPacientes = async function () {
     list.innerHTML = '<div class="loading-spinner py-4 text-center"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>';
 
     try {
+        let listaIdsFisios = [currentUser.id];
+        window.mapFisiosPacientes = {};
+        window.mapFisiosPacientes[currentUser.id] = window.currentProfileData.nombre;
+
+        if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+            const { data: fisiosData } = await supabaseClient
+                .from('fisios')
+                .select('user_id, nombre')
+                .eq('clinica_id', window.currentProfileData.clinicaDataId);
+            if (fisiosData && fisiosData.length > 0) {
+                fisiosData.forEach(f => {
+                    listaIdsFisios.push(f.user_id);
+                    window.mapFisiosPacientes[f.user_id] = f.nombre;
+                });
+            }
+        }
+
         // Obtenemos todos los pacientes del fisio (activos e inactivos)
         const { data: misPacientes, error: errorMis } = await supabaseClient
             .from('mis_pacientes')
-            .select('cliente_id, activo')
-            .eq('fisio_id', currentUser.id);
+            .select('cliente_id, activo, fisio_id')
+            .in('fisio_id', listaIdsFisios);
 
         if (errorMis) throw errorMis;
 
@@ -359,7 +400,7 @@ window.cargarPacientes = async function () {
             const rel = window.misPacientesRel.find(r => r.cliente_id === u.id_supabase);
             return rel && rel.activo;
         });
-        
+
         window.renderizarPacientesList(activos);
 
     } catch (error) {
@@ -382,7 +423,7 @@ window.cargarFichaPaciente = async function (userObj) {
     // Comprobar estado de activo para configurar el botón de favorito
     const rel = window.misPacientesRel ? window.misPacientesRel.find(r => r.cliente_id === currentPatientId) : null;
     const toggleBtn = document.getElementById('quitarPacienteBtn');
-    
+
     if (rel && rel.activo) {
         toggleBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Retirar de mis pacientes';
         toggleBtn.style.color = '#e74c3c';
@@ -408,11 +449,24 @@ window.cargarFichaPaciente = async function (userObj) {
     document.querySelector('.btn-group[data-type="semanas"] .dur-btn[data-val="1"]').classList.add('active');
 
     // Cargar Plan
+    let listaIdsFisios = [currentUser.id];
+    if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+        const { data: fisiosData } = await supabaseClient
+            .from('fisios')
+            .select('user_id')
+            .eq('clinica_id', window.currentProfileData.clinicaDataId);
+        if (fisiosData && fisiosData.length > 0) {
+            fisiosData.forEach(f => listaIdsFisios.push(f.user_id));
+        }
+    }
+
     const { data: planData } = await supabaseClient
         .from('planes_recuperacion')
         .select('*')
-        .eq('fisio_id', currentUser.id)
+        .in('fisio_id', listaIdsFisios)
         .eq('cliente_id', currentPatientId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
         .single();
 
     if (planData) {
@@ -536,12 +590,24 @@ window.abrirPacienteDesdeCalendario = async function (clienteId) {
         return;
     }
 
+    let listaIdsFisios = [currentUser.id];
+    if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+        const { data: fisiosData } = await supabaseClient
+            .from('fisios')
+            .select('user_id')
+            .eq('clinica_id', window.currentProfileData.clinicaDataId);
+        if (fisiosData && fisiosData.length > 0) {
+            fisiosData.forEach(f => listaIdsFisios.push(f.user_id));
+        }
+    }
+
     // Comprobar si ya está en mis_pacientes
     const { data: misData } = await supabaseClient
         .from('mis_pacientes')
         .select('*')
-        .eq('fisio_id', currentUser.id)
+        .in('fisio_id', listaIdsFisios)
         .eq('cliente_id', clienteId)
+        .limit(1)
         .single();
 
     if (!misData) {
@@ -600,19 +666,25 @@ document.getElementById('quitarPacienteBtn').addEventListener('click', async () 
     } else {
         // action === 'add'
         try {
+            let listaIdsFisios = [currentUser.id];
+            if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+                const { data: fisiosData } = await supabaseClient.from('fisios').select('user_id').eq('clinica_id', window.currentProfileData.clinicaDataId);
+                if (fisiosData) fisiosData.forEach(f => listaIdsFisios.push(f.user_id));
+            }
+
             const { data: exists } = await supabaseClient
                 .from('mis_pacientes')
-                .select('id')
-                .eq('fisio_id', currentUser.id)
+                .select('id, fisio_id')
+                .in('fisio_id', listaIdsFisios)
                 .eq('cliente_id', currentPatientId)
+                .limit(1)
                 .single();
 
             if (exists) {
                 const { error } = await supabaseClient
                     .from('mis_pacientes')
                     .update({ activo: true })
-                    .eq('fisio_id', currentUser.id)
-                    .eq('cliente_id', currentPatientId);
+                    .eq('id', exists.id);
                 if (error) throw error;
             } else {
                 const { error } = await supabaseClient

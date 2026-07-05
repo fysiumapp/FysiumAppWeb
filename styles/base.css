@@ -1,0 +1,36 @@
+:root {
+  --primary: #2D5D5D;
+  --primary-light: #3E7C7C;
+  --secondary: #9EB091;
+  --accent: #F39985;
+  --accent-hover: #E3836F;
+  --bg: #F8FAFC;
+  --white: #FFFFFF;
+  --text: #1E293B;
+  --text-light: #64748B;
+  --border: #E2E8F0;
+  --transition: all 0.2s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  overflow-x: hidden;
+  /* Evita scroll horizontal accidental */
+}
+
+/* Clases de utilidad general */
+.section-title {
+  text-align: center;
+  font-size: 2rem;
+  color: var(--primary);
+  margin-bottom: 3rem;
+}

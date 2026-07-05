@@ -31,10 +31,22 @@
                 <button class="nav-item" data-tab="nuevo-paciente">
                     <i class="fa-solid fa-user-plus"></i> Nuevo Paciente
                 </button>
+                <button class="nav-item" data-tab="fisios" id="navFisios" style="display: none;">
+                    <i class="fa-solid fa-user-doctor"></i> Fisios Asociados
+                </button>
                 <button class="nav-item" data-tab="perfil">
-                    <i class="fa-regular fa-user"></i> Mi Perfil
+                    <i class="fa-regular fa-user"></i> <span id="navPerfilText">Mi Perfil</span>
                 </button>
             </nav>
+
+            <div id="license-banner" style="display: none; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; margin: 0 15px 15px 15px; font-size: 0.85rem; text-align: center;">
+                <i id="license-banner-icon" class="fa-solid fa-clock" style="color: var(--primary); font-size: 1.2rem; margin-bottom: 8px;"></i>
+                <p id="license-banner-text" style="color: var(--text-dark); margin-bottom: 8px; line-height: 1.4;">Calculando prueba...</p>
+                <!-- Aprovechamos el botón para llevarlo directo a la pestaña de Mi Perfil -->
+                <button onclick="document.querySelector('[data-tab=\'perfil\']').click()" class="primary-btn" style="width: 100%; padding: 6px; font-size: 0.8rem;">
+                    Activar Licencia
+                </button>
+            </div>
 
             <div class="sidebar-footer">
                 <button id="logoutBtn" class="logout-btn">
@@ -97,6 +109,10 @@
                     <div id="addSessionModal" class="modal">
                         <div class="modal-content">
                             <h3>Nuevo Horario</h3>
+                            <div class="form-group" id="groupSelectFisio" style="display: none;">
+                                <label>Fisioterapeuta</label>
+                                <select id="sessionFisioSelect" class="form-control"></select>
+                            </div>
                             <div class="form-group">
                                 <label>Día</label>
                                 <input type="date" id="sessionDate" class="form-control">
@@ -174,7 +190,12 @@
 
                                 <div class="form-group">
                                     <label>Teléfono (Opcional)</label>
-                                    <input type="tel" id="nuevoTelefono" class="form-control" placeholder="Ej. 600 123 456">
+                                    <div class="phone-input-wrapper">
+                                        <button type="button" class="prefix-box" onclick="abrirModalPrefijos('reserva-prefix')">
+                                            <span id="reserva-prefix">+34</span> <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i>
+                                        </button>
+                                        <input type="tel" id="nuevoTelefono" class="form-control input-with-prefix" placeholder="Ej. 600 123 456">
+                                    </div>
                                 </div>
 
                                 <div class="form-group">
@@ -314,7 +335,12 @@
                             </div>
                             <div class="form-group">
                                 <label>Teléfono (Opcional)</label>
-                                <input type="tel" id="np-phone" class="form-control" placeholder="Ej: 600 000 000">
+                                <div class="phone-input-wrapper">
+                                    <button type="button" class="prefix-box" onclick="abrirModalPrefijos('np-prefix')">
+                                        <span id="np-prefix">+34</span> <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i>
+                                    </button>
+                                    <input type="tel" id="np-phone" class="form-control input-with-prefix" placeholder="Ej: 600 000 000">
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Correo Electrónico (Opcional)</label>
@@ -328,6 +354,91 @@
                         </form>
                     </div>
                 </section>
+
+                <!-- Pestaña: FISIOS ASOCIADOS (Solo Clínicas) -->
+                <section id="tab-fisios" class="tab-pane">
+                    <div class="card" style="max-width: 800px; margin: 0 auto;">
+                        <div class="flex-between mb-4">
+                            <h2>Fisios Asociados</h2>
+                            <button id="addFisioModalBtn" class="primary-btn" style="padding: 0.5rem 1rem;">
+                                <i class="fa-solid fa-plus"></i> Añadir Fisio
+                            </button>
+                        </div>
+                        <p class="text-light mb-4">Gestiona los fisioterapeutas asociados a tu clínica. Cada fisio adicional tiene un coste de 9,95€/mes.</p>
+
+                        <div id="listaFisiosClinica" style="display: flex; flex-direction: column; gap: 15px;">
+                            <div class="loading-spinner">Cargando fisios...</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Modal Añadir Fisio -->
+                <div id="modalAddFisio" class="modal" onclick="if(event.target === this) this.classList.remove('active')">
+                    <div class="modal-content" style="max-width: 450px; position: relative;">
+                        <button onclick="document.getElementById('modalAddFisio').classList.remove('active')" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer;">&times;</button>
+                        <h3 style="margin-bottom: 20px; color: var(--primary);">Añadir Fisioterapeuta</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">
+                            Crearemos un acceso para tu fisioterapeuta. Te pediremos la contraseña actual de tu clínica como medida de seguridad.
+                        </p>
+                        <div class="form-group">
+                            <label>Nombre Completo</label>
+                            <input type="text" id="addFisioName" class="form-control" placeholder="Nombre del fisio">
+                        </div>
+                        <div class="form-group">
+                            <label>Email (acceso)</label>
+                            <input type="email" id="addFisioEmail" class="form-control" placeholder="correo@ejemplo.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono (Opcional)</label>
+                            <div class="phone-input-wrapper">
+                                <button type="button" class="prefix-box" onclick="abrirModalPrefijos('fisio-prefix')">
+                                    <span id="fisio-prefix">+34</span> <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i>
+                                </button>
+                                <input type="tel" id="addFisioPhone" class="form-control input-with-prefix" placeholder="600 000 000">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña para el Fisio</label>
+                            <input type="password" id="addFisioPwd" class="form-control" placeholder="Min. 6 caracteres">
+                        </div>
+                        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                        <div class="form-group">
+                            <label style="color: var(--danger);">Confirmar identidad (Tu contraseña de clínica)</label>
+                            <input type="password" id="addFisioAdminPwd" class="form-control" placeholder="Contraseña de la clínica">
+                        </div>
+                        <button id="submitAddFisioBtn" class="primary-btn w-100 mt-3">Registrar Fisio</button>
+                    </div>
+                </div>
+
+                <!-- Modal Detalle Fisio -->
+                <div id="modalDetalleFisio" class="modal" onclick="if(event.target === this) this.classList.remove('active')">
+                    <div class="modal-content" style="max-width: 450px; position: relative;">
+                        <button onclick="document.getElementById('modalDetalleFisio').classList.remove('active')" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer;">&times;</button>
+
+                        <div class="text-center mb-4 mt-3">
+                            <div class="avatar-large mx-auto mb-3" id="dfAvatar" style="font-size: 2.5rem;">F</div>
+                            <h2 id="dfName">Cargando...</h2>
+                            <p class="text-light" id="dfEmail" style="margin-bottom: 5px;">correo@ejemplo.com</p>
+                            <p class="text-light" id="dfPhone"><i class="fa-solid fa-phone"></i> <span>600 000 000</span></p>
+                        </div>
+
+                        <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 1.5rem; display: flex; justify-content: space-around;">
+                            <div>
+                                <h3 id="dfTerminadas" style="color: var(--primary); font-size: 2rem;">0</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-light); text-transform: uppercase;">Citas Terminadas</p>
+                            </div>
+                            <div style="width: 1px; background-color: #E2E8F0;"></div>
+                            <div>
+                                <h3 id="dfProximas" style="color: var(--secondary); font-size: 2rem;">0</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-light); text-transform: uppercase;">Citas Próximas</p>
+                            </div>
+                        </div>
+
+                        <button id="dfResetPwdBtn" class="secondary-btn w-100" style="margin-bottom: 10px;">
+                            <i class="fa-solid fa-key"></i> Restablecer Contraseña
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Pestaña: PERFIL -->
                 <section id="tab-perfil" class="tab-pane">
@@ -349,6 +460,11 @@
                                 <input type="email" id="profEmail" class="form-control" disabled style="background-color: #f1f1f1; cursor: not-allowed;" title="El email no se puede cambiar por seguridad">
                             </div>
 
+                            <div class="form-group mb-4">
+                                <label><i class="fa-solid fa-lock text-light"></i> Nueva Contraseña (Opcional)</label>
+                                <input type="password" id="profPassword" class="form-control" placeholder="Escribe tu nueva contraseña">
+                            </div>
+
                             <hr style="border:0; border-top:1px solid var(--border); margin: 2rem 0;">
                             <h4 style="color: var(--primary); margin-bottom: 1rem;">Panel de Fisioterapeuta</h4>
 
@@ -368,11 +484,24 @@
                                     <input type="text" id="newSpecialtyInput" class="form-control" placeholder="Ej: Deportiva">
                                     <button type="button" id="addSpecialtyBtn" class="primary-btn" style="padding: 0 1rem;"><i class="fa-solid fa-plus"></i></button>
                                 </div>
-                                <div id="specialtiesContainer" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
-                                    <!-- Etiquetas generadas por JS -->
-                                </div>
+                                <div id="specialtiesContainer" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;"></div>
                             </div>
 
+                            <hr style="border:0; border-top:1px solid var(--border); margin: 2rem 0;">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem;"><i class="fa-regular fa-credit-card"></i> Mi Suscripción</h4>
+
+                            <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 2rem;">
+                                <p style="margin-bottom: 15px; color: var(--text-dark); font-weight: 500;">
+                                    Estado de la cuenta: <span id="subscriptionStatusText" style="color: #64748b; font-weight: bold;">Cargando...</span>
+                                </p>
+
+                                <button type="button" id="stripeCheckoutBtn" class="primary-btn w-100" style="background-color: #6366F1; border: none; display: none;">
+                                    <i class="fa-solid fa-lock"></i> Suscribirse de forma segura (12,95€/mes)
+                                </button>
+                                <p id="stripeSecureText" style="font-size: 0.75rem; color: #9CA3AF; margin-top: 10px; display: none;">
+                                    <i class="fa-solid fa-shield-halved"></i> Pago seguro cifrado por Stripe
+                                </p>
+                            </div>
                             <button type="submit" id="saveProfileBtn" class="primary-btn w-100 mt-4">Actualizar Perfil</button>
                         </form>
                     </div>
@@ -397,6 +526,39 @@
 
             <button id="addCustomRecBtn" class="primary-btn w-100 mb-2">AÑADIR A LA LISTA</button>
             <button id="closeRecModalBtn" class="secondary-btn w-100" style="background: transparent; color: var(--danger); border: none;">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modalPrefijosWeb" class="modal" onclick="if(event.target === this) this.classList.remove('active')">
+        <div class="modal-content" style="max-width: 320px; padding: 0; border-radius: 12px; overflow: hidden;">
+            <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8f9fa;">
+                <h3 style="margin: 0; font-size: 1.1rem; color: #333;">Selecciona el prefijo</h3>
+                <button onclick="document.getElementById('modalPrefijosWeb').classList.remove('active')" style="background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer;">&times;</button>
+            </div>
+            <div id="listaPrefijosWeb" style="max-height: 350px; overflow-y: auto;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Inteligente de Licencia -->
+    <div id="license-modal" class="modal" style="z-index: 10000; background-color: rgba(0,0,0,0.8);">
+        <div class="modal-content text-center" style="max-width: 450px; position: relative;">
+
+            <div id="license-modal-icon-bg" style="width: 60px; height: 60px; border-radius: 30px; background-color: var(--primary); display: flex; justify-content: center; align-items: center; margin: -45px auto 20px auto; border: 4px solid white; font-size: 1.5rem; color: white;">
+                <i id="license-modal-icon" class="fa-solid fa-rocket"></i>
+            </div>
+
+            <h2 id="license-modal-title" style="margin-bottom: 15px; color: var(--text-dark);">Título</h2>
+            <p id="license-modal-body" style="color: var(--text-light); margin-bottom: 25px; line-height: 1.5;">Cuerpo del mensaje</p>
+
+            <div style="display: flex; gap: 10px;">
+                <button onclick="document.getElementById('license-modal').classList.remove('active')" class="secondary-btn" style="flex: 1; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 1rem; border: 1px solid #CBD5E1; display: flex; justify-content: center; align-items: center;">
+                    Entendido
+                </button>
+                <button onclick="document.getElementById('license-modal').classList.remove('active'); document.querySelector('[data-tab=\'perfil\']').click();" class="primary-btn" style="flex: 1;">
+                    Ir a Suscripción
+                </button>
+            </div>
         </div>
     </div>
 
@@ -450,6 +612,28 @@
                 actualizarInputsOcultos();
             }
         });
+        // --- LÓGICA DE PREFIJOS INTERNACIONALES ---
+        let prefijoActivoId = '';
+        const PREFIJOS_WEB = ['+34', '+1', '+44', '+33', '+49', '+351', '+39', '+52', '+54', '+57', '+56'];
+
+        function abrirModalPrefijos(targetId) {
+            prefijoActivoId = targetId;
+            const modal = document.getElementById('modalPrefijosWeb');
+            const lista = document.getElementById('listaPrefijosWeb');
+
+            lista.innerHTML = PREFIJOS_WEB.map(p =>
+                `<div class="prefix-item" onclick="seleccionarPrefijo('${p}')">${p}</div>`
+            ).join('');
+
+            modal.classList.add('active');
+        }
+
+        function seleccionarPrefijo(prefijo) {
+            if (prefijoActivoId) {
+                document.getElementById(prefijoActivoId).innerText = prefijo;
+            }
+            document.getElementById('modalPrefijosWeb').classList.remove('active');
+        }
     </script>
 
 </body>

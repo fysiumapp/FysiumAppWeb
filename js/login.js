@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function checkExistingSession() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
-            verificarFisio(session.user.id);
+            verificarRolUsuario(session.user.id);
         }
     }
 
@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (error) throw error;
 
-            // Verificamos que sea un Fisioterapeuta
-            await verificarFisio(data.user.id);
+            // Verificamos el rol (fisio o clinica)
+            await verificarRolUsuario(data.user.id);
 
         } catch (error) {
             console.error(error);
@@ -47,24 +47,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    async function verificarFisio(userId) {
+    async function verificarRolUsuario(userId) {
         try {
-            // Buscamos al usuario en la tabla 'fisios'
+            // Buscamos el rol del usuario en gestion_perfil
             const { data, error } = await supabaseClient
-                .from('fisios')
-                .select('id')
+                .from('gestion_perfil')
+                .select('rol')
                 .eq('user_id', userId)
                 .single();
 
-            if (error || !data) {
-                // Si no está en la tabla fisios, es un paciente normal. Rechazamos.
+            if (error || !data || (data.rol !== 'fisio' && data.rol !== 'clinica')) {
+                // Si no es fisio ni clinica, rechazamos.
                 await supabaseClient.auth.signOut({ scope: 'local' });
-                showError("Acceso denegado. Esta sección es exclusiva para fisioterapeutas.");
+                showError("Acceso denegado. Esta sección es exclusiva para profesionales.");
                 setLoading(false);
                 return;
             }
 
-            // Es fisio, redirigir al dashboard
+            // Es fisio o clínica, redirigir al dashboard
             window.location.href = 'dashboard.html';
 
         } catch (error) {
