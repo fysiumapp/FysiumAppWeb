@@ -36,7 +36,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Contraseña</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label for="password">Contraseña</label>
+                        <a href="#" id="forgotPasswordBtn" style="font-size: 0.85rem; color: #0d9488; text-decoration: none;">¿Has olvidado tu contraseña?</a>
+                    </div>
                     <input type="password" id="password" class="form-control" required placeholder="••••••••">
                 </div>
 
@@ -46,6 +49,9 @@
                 </button>
             </form>
 
+            <div class="login-footer" style="margin-bottom: 15px;">
+                <p>¿Aún no tienes cuenta? <a href="registro.html" style="color:#0d9488; font-weight:bold;">Regístrate gratis</a></p>
+            </div>
             <div class="login-footer">
                 <a href="index.html" class="back-link">
                     &larr; Volver al inicio

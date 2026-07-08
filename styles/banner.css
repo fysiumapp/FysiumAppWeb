@@ -1,0 +1,94 @@
+/* --- Banner para Pacientes --- */
+.patient-banner {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  margin: 4rem auto;
+  max-width: 800px;
+  text-align: center;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+  border-top: 4px solid #0d9488;
+  /* Cámbialo por el color principal de tu app */
+  position: relative;
+}
+
+.banner-icon {
+  background: #ffffff;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -4.5rem auto 1.5rem auto;
+  /* Saca el icono un poco hacia arriba */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  font-size: 24px;
+  color: #0d9488;
+  /* Tu color principal */
+}
+
+.patient-banner h3 {
+  color: #0f172a;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.patient-banner p {
+  color: #475569;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto 2rem auto;
+}
+
+/* Botones de descarga */
+.download-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-store {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #0f172a;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: transform 0.2s ease, background 0.2s ease;
+  text-align: left;
+  line-height: 1.2;
+}
+
+.btn-store i {
+  font-size: 1.8rem;
+}
+
+.btn-store span {
+  font-size: 0.75rem;
+}
+
+.btn-store strong {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.btn-store:hover {
+  background: #1e293b;
+  transform: translateY(-3px);
+}
+
+.btn-store.disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.btn-store.disabled:hover {
+  transform: none;
+}

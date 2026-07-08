@@ -1,0 +1,140 @@
+/* Estilos extra específicos para el registro */
+    .role-toggle {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: #F9F9F9;
+      padding: 5px;
+      border-radius: 12px;
+      border: 1px solid #EEE;
+    }
+
+    .role-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #7f8c8d;
+      transition: 0.3s;
+    }
+
+    .role-btn.active {
+      background: #fff;
+      color: #0d9488;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .phone-group {
+      display: flex;
+      gap: 0;
+    }
+
+    .phone-group select {
+      background: #F9F9F9;
+      border: 1px solid #EEE;
+      border-right: none;
+      border-radius: 12px 0 0 12px;
+      padding: 0 10px;
+      font-weight: bold;
+      color: #555;
+      outline: none;
+    }
+
+    .phone-group input {
+      border-radius: 0 12px 12px 0;
+      flex: 1;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .clinica-section {
+      background: #F0F8FF;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #D0E8FF;
+      margin-bottom: 20px;
+    }
+
+    .fisio-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #EEE;
+      margin-bottom: 10px;
+    }
+
+    .btn-outline {
+      border: 1px dashed #0d9488;
+      color: #0d9488;
+      background: transparent;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+      color: #555;
+    }
+
+    /* Modal Fisio */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .modal-buttons button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-cancel {
+      background: #EEE;
+      color: #555;
+    }
+
+    .btn-save {
+      background: #0d9488;
+      color: white;
+    }

@@ -1,0 +1,123 @@
+/* --- Sección Promocional Fisios --- */
+.physio-promo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+  padding: 5rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.promo-content {
+  flex: 1;
+  max-width: 550px;
+}
+
+.promo-badge {
+  display: inline-block;
+  background: #fef3c7;
+  color: #d97706;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 20px;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
+}
+
+.physio-promo h2 {
+  font-size: 2.5rem;
+  color: #0f172a;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+
+.physio-promo p {
+  font-size: 1.1rem;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.promo-features {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 2.5rem;
+}
+
+.promo-features li {
+  margin-bottom: 0.75rem;
+  color: #334155;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.promo-features li i {
+  color: #0d9488;
+  /* Tu color principal */
+}
+
+.cta-button-main {
+  display: inline-block;
+  background: #0d9488;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+}
+
+.cta-button-main:hover {
+  background: #0f766e;
+  transform: translateY(-2px);
+}
+
+.promo-image {
+  flex: 1;
+  position: relative;
+}
+
+.promo-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+
+  position: relative;
+  z-index: 2;
+}
+
+/* .image-backdrop {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100%;
+  height: 100%;
+  background: #e2e8f0;
+  border-radius: 12px;
+  z-index: 1;
+} */
+
+/* Responsividad para móviles */
+@media (max-width: 900px) {
+  .physio-promo {
+    flex-direction: column;
+    text-align: center;
+    gap: 3rem;
+  }
+
+  .promo-content {
+    margin: 0 auto;
+  }
+
+  .promo-features li {
+    justify-content: center;
+  }
+
+
+}
