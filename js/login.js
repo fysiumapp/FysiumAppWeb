@@ -128,7 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (error) {
                 // Aquí traducimos el error técnico a algo que el usuario entienda
                 let msg = error.message;
-                if (msg.includes("429")) {
+
+                // Cazamos el mensaje exacto de Supabase en inglés
+                if (msg.includes("429") || msg.includes("For security purposes") || msg.includes("rate limit")) {
                     msg = "Por favor, espera unos segundos antes de pedir otro correo.";
                 } else if (msg.includes("not found")) {
                     msg = "No encontramos una cuenta con ese correo.";
