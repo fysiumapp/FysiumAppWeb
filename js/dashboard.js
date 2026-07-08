@@ -2,7 +2,7 @@ let currentUser = null;
 
 // const DIAS_DE_PRUEBA = 15;
 
-const DIAS_DE_PRUEBA = 5;
+const DIAS_DE_PRUEBA = 100;
 
 const HITOS_AVISO = [0, 30, 60, 90];
 
@@ -214,10 +214,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         let fechaBaseTexto = fechaRegistroBase.toISOString();
         if (!fechaBaseTexto.includes('Z') && !fechaBaseTexto.includes('+')) fechaBaseTexto += 'Z';
 
-        // ⚠️ IMPORTANTE PARA TUS PRUEBAS:
-        // Ahora mismo está en minutos (1000 * 60). 
-        // Cuando pases a producción cámbialo a días: (1000 * 60 * 60 * 24)
-        const divisorTiempo = 1000 * 60;
+
+        // minutos (1000 * 60). 
+        // días: (1000 * 60 * 60 * 24)
+        const divisorTiempo = 1000 * 60 * 60 * 24;
 
         const unidadesTranscurridas = Math.max(0, Math.floor((hoy.getTime() - new Date(fechaBaseTexto).getTime()) / divisorTiempo));
         const unidadesRestantes = Math.max(0, DIAS_DE_PRUEBA - unidadesTranscurridas);
@@ -286,11 +286,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     banner.style.borderColor = '#FCA5A5';
                     bannerIcon.style.color = 'var(--danger)';
                     bannerIcon.className = 'fa-solid fa-triangle-exclamation';
-                    // Recuerda cambiar la palabra "minutos" a "días" para producción
-                    bannerText.innerHTML = `<strong>⚠️ ¡Aviso Urgente!</strong><br>Quedan ${unidadesRestantes} minutos de prueba.`;
+                    bannerText.innerHTML = `<strong>⚠️ ¡Aviso Urgente!</strong><br>Quedan ${unidadesRestantes} días de prueba.`;
                 } else {
-                    // Recuerda cambiar la palabra "minutos" a "días" para producción
-                    bannerText.innerHTML = `<strong>Periodo de prueba</strong><br>Quedan ${unidadesRestantes} minutos.`;
+                    bannerText.innerHTML = `<strong>Periodo de prueba</strong><br>Quedan ${unidadesRestantes} días.`;
                 }
             }
 
