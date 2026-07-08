@@ -58,7 +58,10 @@
         <!-- Contenido Principal -->
         <main class="main-content">
             <header class="top-header">
-                <h1 id="pageTitle">Calendario</h1>
+                <div style="display: flex; align-items: center;">
+                    <button id="mobileMenuBtn" class="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+                    <h1 id="pageTitle">Calendario</h1>
+                </div>
                 <div class="user-info">
                     <span id="userNameHeader">Cargando...</span>
                     <div class="avatar" id="userAvatarHeader">F</div>
@@ -634,6 +637,34 @@
             }
             document.getElementById('modalPrefijosWeb').classList.remove('active');
         }
+
+        // --- LÓGICA DEL MENÚ MÓVIL ---
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.querySelector('.sidebar');
+
+        // Creamos el fondo oscuro para poder cerrar el menú tocando fuera
+        const overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        document.body.appendChild(overlay);
+
+        function toggleMenu() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        // Abrir/cerrar al tocar el botón o el fondo oscuro
+        mobileMenuBtn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        // Cerrar el menú automáticamente al tocar cualquier opción (solo en móvil)
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            });
+        });
     </script>
 
 </body>
