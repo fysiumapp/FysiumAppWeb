@@ -87,12 +87,7 @@
           <input type="password" id="password" class="form-control" required placeholder="••••••••">
         </div>
 
-        <!-- Sección Dinámica Clínica -->
-        <div class="clinica-section hidden" id="clinicaSection">
-          <h4 style="margin-top:0; color:#0d9488;">Fisioterapeutas Asociados (Mín. 2)</h4>
-          <div id="fisiosListContainer"></div>
-          <button type="button" class="btn-outline" onclick="openFisioModal()">+ Añadir Fisioterapeuta</button>
-        </div>
+
 
         <div class="checkbox-group">
           <input type="checkbox" id="terminos" required>
@@ -111,50 +106,7 @@
     </div>
   </div>
 
-  <!-- Modal Nuevo Fisio -->
-  <div id="fisioModal" class="modal hidden">
-    <div class="modal-content">
-      <h3 style="margin-top:0; text-align:center;">Nuevo Fisioterapeuta</h3>
-      <div id="modalError" class="error-message" style="display:none; color:red; font-size:12px; margin-bottom:10px;"></div>
 
-      <div class="form-group">
-        <label>Nombre</label>
-        <input type="text" id="m_nombre" class="form-control">
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="m_email" class="form-control">
-      </div>
-      <div class="form-group">
-        <label>Teléfono (Opcional)</label>
-        <div class="phone-group">
-          <select id="m_prefix">
-            <option value="+34">+34</option>
-            <option value="+1">+1</option>
-            <option value="+44">+44</option>
-            <option value="+33">+33</option>
-            <option value="+49">+49</option>
-            <option value="+351">+351</option>
-            <option value="+39">+39</option>
-            <option value="+52">+52</option>
-            <option value="+54">+54</option>
-            <option value="+57">+57</option>
-            <option value="+56">+56</option>
-          </select>
-          <input type="tel" id="m_telefono" class="form-control">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" id="m_password" class="form-control">
-      </div>
-
-      <div class="modal-buttons">
-        <button type="button" class="btn-cancel" onclick="closeFisioModal()">Cancelar</button>
-        <button type="button" class="btn-save" onclick="saveFisio()">Guardar</button>
-      </div>
-    </div>
-  </div>
 
   <script src="js/supabase-config.js"></script>
   <script src="js/registro.js"></script>

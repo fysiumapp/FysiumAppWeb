@@ -65,7 +65,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Es fisio o clínica, redirigir al dashboard
+            if (data.rol === 'clinica') {
+                const { data: clinica } = await supabaseClient.from('clinicas').select('id').eq('user_id', userId).single();
+                if (clinica) {
+                    const { count } = await supabaseClient.from('fisios').select('*', { count: 'exact', head: true }).eq('clinica_id', clinica.id);
+                    if (count < 2) {
+                        window.location.href = 'configuracion-clinica.html';
+                        return;
+                    }
+                }
+            }
+
+            // Es fisio o clínica (con todo en regla), redirigir al dashboard
             window.location.href = 'dashboard.html';
 
         } catch (error) {

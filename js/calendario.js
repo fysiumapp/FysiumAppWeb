@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fin = finInput.value;
         const precio = precioInput.value;
 
-        if (!dia || !inicio || !fin || !precio) {
+        if (!dia || !inicio || !fin) {
             console.warn("3. Faltan campos por rellenar");
             return alert('Completa todos los campos');
         }
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     dia: dia,
                     hora: inicio,
                     hora_fin: fin,
-                    precio: parseFloat(precio),
+                    precio: precio ? parseFloat(precio) : 0,
                     estado: 'libre'
                 }]);
 
@@ -322,7 +322,7 @@ function renderizarDiaSeleccionado() {
                 <div class="session-time">${s.hora} - ${s.hora_fin}</div>
                 ${fisioBadge}
                 <div class="session-status">${s.estado === 'reservado' ? `RESERVADO: ${patientName}` : 'LIBRE'}</div>
-                <div class="session-price">${s.precio}€</div>
+                <div class="session-price">${s.precio > 0 ? `${s.precio}€` : 'A consultar'}</div>
             </div>
         `;
 

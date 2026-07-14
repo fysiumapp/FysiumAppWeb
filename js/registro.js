@@ -120,9 +120,7 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
     return showError("Debes aceptar los Términos y la Política de Privacidad.");
   }
 
-  if (currentRole === 'clinica' && fisiosClinica.length < 2) { // Validación de tu app original
-    return showError("Debes añadir al menos 2 fisioterapeutas asociados para registrar la clínica.");
-  }
+    // Se elimina la validación de 2 fisios mínimos aquí, ya que ahora se hace en el onboarding
 
   // Preparar UI para cargar
   submitBtn.disabled = true;
@@ -179,39 +177,10 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
 
       if (errClinica) throw new Error(`Error en datos de clínica: ${errClinica.message}`);
 
-      // 4. Crear los fisios asociados (Bucle igual que en RN)
-      for (const f of fisiosClinica) {
-        const fisioTelefonoFinal = f.telefono ? `${f.prefix}${f.telefono}` : 'Sin teléfono';
-
-        const { data: authF, error: errF } = await supabaseClient.auth.signUp({
-          email: f.email,
-          password: f.password,
-          options: { data: { full_name: f.nombre, telefono: fisioTelefonoFinal } }
-        });
-
-        if (errF) throw new Error(`Fallo en fisio ${f.nombre}: ${errF.message}`);
-        if (!authF.user) throw new Error(`No se pudo crear fisio ${f.nombre}`);
-
-        await supabaseClient.from('gestion_perfil').update({ rol: 'fisio' }).eq('user_id', authF.user.id);
-
-        if (fisioTelefonoFinal !== 'Sin teléfono') {
-          await supabaseClient.from('auth_user').update({ telefono: fisioTelefonoFinal }).eq('id_supabase', authF.user.id);
-        }
-
-        const { error: fisioInsertErr } = await supabaseClient.from('fisios').upsert({
-          user_id: authF.user.id,
-          nombre: f.nombre,
-          email: f.email,
-          telefono: fisioTelefonoFinal,
-          plan_suscripcion: 'free',
-          clinica_id: clinicaData.id
-        });
-
-        if (fisioInsertErr) throw new Error(`Error guardando datos de fisio: ${fisioInsertErr.message}`);
-      }
-
-      // 5. Re-autenticar como clínica (Para no dejar la sesión del último fisio)
+      // 4. Autenticar y redirigir al Onboarding
       await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+      window.location.href = 'configuracion-clinica.html';
+      return;
 
     }
     // ----- REGISTRO FISIO INDIVIDUAL -----
