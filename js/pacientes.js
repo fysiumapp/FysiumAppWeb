@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const { error: errorMis } = await supabaseClient
                 .from('mis_pacientes')
-                .insert([{ fisio_id: currentUser.id, cliente_id: uuid }]);
+                .insert([{ fisio_id: currentUser.id, cliente_id: uuid, activo: true }]);
 
             if (errorMis && errorMis.code !== '23505') throw errorMis;
 
@@ -366,6 +366,15 @@ window.cargarPacientes = async function () {
                     window.mapFisiosPacientes[f.user_id] = f.nombre;
                 });
             }
+        } else if (window.currentProfileData && window.currentProfileData.rol === 'fisio') {
+            // El fisio también descarga los pacientes creados por su clínica
+            const { data: misDatosFisio } = await supabaseClient.from('fisios').select('clinica_id').eq('user_id', currentUser.id).single();
+            if (misDatosFisio && misDatosFisio.clinica_id) {
+                const { data: datosClinica } = await supabaseClient.from('clinicas').select('user_id').eq('id', misDatosFisio.clinica_id).single();
+                if (datosClinica && datosClinica.user_id) {
+                    listaIdsFisios.push(datosClinica.user_id);
+                }
+            }
         }
 
         // Obtenemos todos los pacientes del fisio (activos e inactivos)
@@ -652,6 +661,15 @@ document.getElementById('quitarPacienteBtn').addEventListener('click', async () 
             if (error) throw error;
 
             alert("Paciente retirado de tu lista.");
+
+            const hoyStr = new Date().toISOString().split('T')[0];
+            await supabaseClient
+                .from('horarios_disponibles')
+                .update({ estado: 'libre', cliente_id: null, motivo: null })
+                .eq('fisio_id', currentUser.id)
+                .eq('cliente_id', currentPatientId)
+                .gte('dia', hoyStr)
+                .eq('estado', 'reservado');
 
             // Volver a la pestaña de pacientes
             document.getElementById('tab-detalle-paciente').classList.remove('active');

@@ -35,6 +35,12 @@ document.addEventListener('DOMContentLoaded', () => {
     addSafeEventListener('addSessionBtn', 'click', () => {
         const addSessionModal = document.getElementById('addSessionModal');
         if (addSessionModal) {
+            // Buscar el input de la fecha y autocompletarlo con el día marcado
+            const diaInput = document.getElementById('sessionDate');
+            if (diaInput && selectedDate) {
+                diaInput.value = formatearFecha(selectedDate);
+            }
+
             addSessionModal.classList.add('active');
         }
     });
@@ -299,6 +305,12 @@ function renderizarDiaSeleccionado() {
 
     const citasDelDia = monthAppointments.filter(cita => cita.dia === diaStr);
 
+    citasDelDia.sort((a, b) => {
+        const [hA, mA] = a.hora.split(':').map(Number);
+        const [hB, mB] = b.hora.split(':').map(Number);
+        return (hA * 60 + mA) - (hB * 60 + mB);
+    });
+
     if (citasDelDia.length === 0) {
         list.innerHTML = `<p class="text-light text-center mt-4">No hay sesiones este día.</p>`;
         return;
@@ -400,14 +412,15 @@ async function cargarPacientesParaModal() {
             .select('user_id')
             .eq('clinica_id', window.currentProfileData.clinicaDataId);
         if (fisiosData && fisiosData.length > 0) {
-            listaIdsFisios = fisiosData.map(f => f.user_id);
+            listaIdsFisios = [currentUser.id, ...fisiosData.map(f => f.user_id)];
         }
     }
 
     const { data: misPacs } = await supabaseClient
         .from('mis_pacientes')
         .select('cliente_id, auth_user(username, foto_perfil_url)')
-        .in('fisio_id', listaIdsFisios);
+        .in('fisio_id', listaIdsFisios)
+        .eq('activo', true);
 
     lista.innerHTML = misPacs.map(p => `
         <li onclick="seleccionarPaciente('${p.auth_user.username}')" style="cursor:pointer; padding:10px; border-bottom:1px solid #eee">
