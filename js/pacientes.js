@@ -21,6 +21,29 @@ const ICONOS_CUSTOM = [
 ];
 let selectedCustomIcon = 'fa-star';
 
+async function obtenerIdsRed() {
+    let listaIdsFisios = [currentUser.id];
+
+    if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+        const { data: fisiosData } = await supabaseClient
+            .from('fisios')
+            .select('user_id')
+            .eq('clinica_id', window.currentProfileData.clinicaDataId);
+        if (fisiosData) {
+            fisiosData.forEach(f => listaIdsFisios.push(f.user_id));
+        }
+    } else if (window.currentProfileData && window.currentProfileData.rol === 'fisio') {
+        const { data: misDatosFisio } = await supabaseClient.from('fisios').select('clinica_id').eq('user_id', currentUser.id).single();
+        if (misDatosFisio?.clinica_id) {
+            const { data: datosClinica } = await supabaseClient.from('clinicas').select('user_id').eq('id', misDatosFisio.clinica_id).single();
+            if (datosClinica?.user_id) {
+                listaIdsFisios.push(datosClinica.user_id);
+            }
+        }
+    }
+    return [...new Set(listaIdsFisios)]; // Devuelve IDs únicos
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // ... logic (leave intact)
     // Alta de Paciente
@@ -301,47 +324,43 @@ function renderRecommendationsGrid() {
     grid.appendChild(newCard);
 }
 
-window.renderizarPacientesList = function (usuariosAMostrar) {
+window.renderizarPacientesList = function (grupos) {
     const list = document.getElementById('patientsList');
     list.innerHTML = '';
 
-    if (!usuariosAMostrar || usuariosAMostrar.length === 0) {
-        list.innerHTML = '<p class="text-center text-light py-4">No se encontraron pacientes.</p>';
-        return;
-    }
+    const renderizarSeccion = (titulo, listaPacientes) => {
+        if (!listaPacientes || listaPacientes.length === 0) return;
 
-    usuariosAMostrar.forEach(u => {
-        const card = document.createElement('div');
-        card.className = 'patient-card';
-        card.style.cursor = 'pointer';
+        const h3 = document.createElement('h3');
+        h3.className = 'section-title';
+        h3.style.marginTop = '20px';
+        h3.style.color = 'var(--primary)';
+        h3.textContent = titulo;
+        list.appendChild(h3);
 
-        let avatarHtml = `<div class="avatar">${(u.username || 'P').charAt(0).toUpperCase()}</div>`;
-        if (u.foto_perfil_url) {
-            avatarHtml = `<img src="${u.foto_perfil_url}" alt="${u.username}" class="avatar" style="object-fit:cover">`;
-        }
+        listaPacientes.forEach(u => {
+            const card = document.createElement('div');
+            card.className = 'patient-card';
+            card.style.cursor = 'pointer';
 
-        let fisioBadge = '';
-        if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
-            const rel = window.misPacientesRel ? window.misPacientesRel.find(r => r.cliente_id === u.id_supabase) : null;
-            if (rel) {
-                const nombreFisio = window.mapFisiosPacientes ? window.mapFisiosPacientes[rel.fisio_id] : null;
-                if (nombreFisio) {
-                    fisioBadge = `<div style="font-size:0.75rem; color:var(--primary); font-weight:600;"><i class="fa-solid fa-user-doctor"></i> ${nombreFisio}</div>`;
-                }
-            }
-        }
+            let avatarHtml = `<div class="avatar">${(u.username || 'P').charAt(0).toUpperCase()}</div>`;
+            if (u.foto_perfil_url) avatarHtml = `<img src="${u.foto_perfil_url}" class="avatar" style="object-fit:cover">`;
 
-        card.innerHTML = `
-            ${avatarHtml}
-            <div class="patient-info">
-                <div class="patient-name">${u.username || 'Paciente'}</div>
-                ${fisioBadge}
-                <div class="patient-email">${u.email || 'Sin correo'}</div>
-            </div>
-            <div style="color:var(--text-light)"><i class="fa-solid fa-chevron-right"></i></div>
-        `;
-        card.onclick = () => window.cargarFichaPaciente(u);
-        list.appendChild(card);
+            card.innerHTML = `${avatarHtml}<div class="patient-info"><div class="patient-name">${u.username}</div><div class="patient-email">${u.email || ''}</div></div><i class="fa-solid fa-chevron-right" style="color:var(--text-light)"></i>`;
+            card.onclick = () => window.cargarFichaPaciente(u);
+            list.appendChild(card);
+        });
+    };
+
+    // Renderizar Mis Pacientes primero
+    renderizarSeccion('Mis Pacientes', grupos['Mis Pacientes']);
+
+    // Renderizar Clínica después
+    renderizarSeccion('Pacientes de la Clínica', grupos['Pacientes de la Clínica']);
+
+    // Renderizar resto de fisios
+    Object.keys(grupos['otros']).forEach(nombreFisio => {
+        renderizarSeccion(nombreFisio, grupos['otros'][nombreFisio]);
     });
 };
 
@@ -355,62 +374,77 @@ window.cargarPacientes = async function () {
         window.mapFisiosPacientes = {};
         window.mapFisiosPacientes[currentUser.id] = window.currentProfileData.nombre;
 
+        let idClinicaOwner = null;
+
         if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+            idClinicaOwner = currentUser.id;
             const { data: fisiosData } = await supabaseClient
                 .from('fisios')
                 .select('user_id, nombre')
                 .eq('clinica_id', window.currentProfileData.clinicaDataId);
-            if (fisiosData && fisiosData.length > 0) {
+            if (fisiosData) {
                 fisiosData.forEach(f => {
                     listaIdsFisios.push(f.user_id);
                     window.mapFisiosPacientes[f.user_id] = f.nombre;
                 });
             }
         } else if (window.currentProfileData && window.currentProfileData.rol === 'fisio') {
-            // El fisio también descarga los pacientes creados por su clínica
             const { data: misDatosFisio } = await supabaseClient.from('fisios').select('clinica_id').eq('user_id', currentUser.id).single();
-            if (misDatosFisio && misDatosFisio.clinica_id) {
+            if (misDatosFisio?.clinica_id) {
                 const { data: datosClinica } = await supabaseClient.from('clinicas').select('user_id').eq('id', misDatosFisio.clinica_id).single();
-                if (datosClinica && datosClinica.user_id) {
+                if (datosClinica?.user_id) {
+                    idClinicaOwner = datosClinica.user_id;
                     listaIdsFisios.push(datosClinica.user_id);
                 }
             }
         }
 
         // Obtenemos todos los pacientes del fisio (activos e inactivos)
-        const { data: misPacientes, error: errorMis } = await supabaseClient
+        const { data: misPacientes } = await supabaseClient
             .from('mis_pacientes')
             .select('cliente_id, activo, fisio_id')
             .in('fisio_id', listaIdsFisios);
 
-        if (errorMis) throw errorMis;
-
         window.misPacientesRel = misPacientes || [];
-
-        if (!misPacientes || misPacientes.length === 0) {
+        if (!misPacientes?.length) {
             list.innerHTML = '<p class="text-center text-light py-4">Aún no tienes pacientes guardados.</p>';
             return;
         }
 
-        const ids = misPacientes.map(mp => mp.cliente_id);
-
-        const { data: usuarios, error: errorUsr } = await supabaseClient
+        const { data: usuarios } = await supabaseClient
             .from('auth_user')
             .select('*')
-            .in('id_supabase', ids)
-            .order('username', { ascending: true });
-
-        if (errorUsr) throw errorUsr;
+            .in('id_supabase', misPacientes.map(mp => mp.cliente_id));
 
         window.allMyPatients = usuarios || [];
 
-        // Por defecto, renderizamos solo los activos
-        const activos = window.allMyPatients.filter(u => {
-            const rel = window.misPacientesRel.find(r => r.cliente_id === u.id_supabase);
-            return rel && rel.activo;
+        // --- LÓGICA DE AGRUPACIÓN ---
+        const grupos = { 'Mis Pacientes': [], 'Pacientes de la Clínica': [], 'otros': {} };
+        window.misPacientesRel.forEach(rel => {
+            if (!rel.activo) return;
+            const u = window.allMyPatients.find(p => p.id_supabase === rel.cliente_id);
+            if (!u) return;
+            // Clasificamos asegurando que no metemos el mismo paciente 2 veces en el MISMO grupo
+            if (rel.fisio_id === currentUser.id) {
+                if (!grupos['Mis Pacientes'].some(p => p.id_supabase === u.id_supabase)) {
+                    grupos['Mis Pacientes'].push(u);
+                }
+            } else if (rel.fisio_id === idClinicaOwner) {
+                if (!grupos['Pacientes de la Clínica'].some(p => p.id_supabase === u.id_supabase)) {
+                    grupos['Pacientes de la Clínica'].push(u);
+                }
+            } else {
+                const nombreFisio = window.mapFisiosPacientes[rel.fisio_id] || 'Fisio';
+                const key = `Pacientes de ${nombreFisio}`;
+                if (!grupos['otros'][key]) grupos['otros'][key] = [];
+
+                if (!grupos['otros'][key].some(p => p.id_supabase === u.id_supabase)) {
+                    grupos['otros'][key].push(u);
+                }
+            }
         });
 
-        window.renderizarPacientesList(activos);
+        window.renderizarPacientesList(grupos);
 
     } catch (error) {
         console.error(error);
@@ -430,7 +464,7 @@ window.cargarFichaPaciente = async function (userObj) {
     document.getElementById('tab-detalle-paciente').classList.add('active');
 
     // Comprobar estado de activo para configurar el botón de favorito
-    const rel = window.misPacientesRel ? window.misPacientesRel.find(r => r.cliente_id === currentPatientId) : null;
+    const rel = window.misPacientesRel ? window.misPacientesRel.find(r => r.cliente_id === currentPatientId && r.fisio_id === currentUser.id) : null;
     const toggleBtn = document.getElementById('quitarPacienteBtn');
 
     if (rel && rel.activo) {
@@ -476,7 +510,7 @@ window.cargarFichaPaciente = async function (userObj) {
         .eq('cliente_id', currentPatientId)
         .order('updated_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle()
 
     if (planData) {
         currentPlanId = planData.id;
