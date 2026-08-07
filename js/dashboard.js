@@ -385,6 +385,9 @@ async function cargarPerfil(userId, userDataBase, authEmail, rol) {
         email: email,
         foto: foto,
         num_colegiado: userDataBase.num_colegiado || '',
+        telefono_fijo: userDataBase.telefono_fijo || '',
+        telefono_movil: userDataBase.telefono_movil || '',
+        biografia: userDataBase.biografia || '',
         redes_sociales: userDataBase.redes_sociales || '',
         especialidades: userDataBase.especialidad ? userDataBase.especialidad.split(',').map(s => s.trim()).filter(Boolean) : [],
         plan_suscripcion: userDataBase.plan_suscripcion || 'free' // GUARDAR PLAN
@@ -412,6 +415,9 @@ async function cargarPerfil(userId, userDataBase, authEmail, rol) {
 
         try {
             const newName = document.getElementById('profName').value.trim();
+            const newFijo = document.getElementById('profTelefonoFijo').value.trim();
+            const newMovil = document.getElementById('profTelefonoMovil').value.trim();
+            const newBio = document.getElementById('profBiografia').value.trim();
             const newCol = document.getElementById('profColegiado').value.trim();
             const newRedes = document.getElementById('profRedes').value.trim();
             const specString = window.currentProfileData.especialidades.join(', ');
@@ -440,11 +446,17 @@ async function cargarPerfil(userId, userDataBase, authEmail, rol) {
                     nombre: newName,
                     num_colegiado: newCol,
                     redes_sociales: newRedes,
-                    especialidad: specString
+                    especialidad: specString,
+                    telefono_fijo: newFijo,
+                    telefono_movil: newMovil,
+                    biografia: newBio
                 })
                 .eq('user_id', userId);
 
             window.currentProfileData.nombre = newName;
+            window.currentProfileData.telefono_fijo = newFijo;
+            window.currentProfileData.telefono_movil = newMovil;
+            window.currentProfileData.biografia = newBio;
             renderizarPerfilInfo();
             alert('Perfil actualizado correctamente.');
 
@@ -575,6 +587,9 @@ function renderizarPerfilInfo() {
     document.getElementById('profEmail').value = data.email;
     document.getElementById('profColegiado').value = data.num_colegiado;
     document.getElementById('profRedes').value = data.redes_sociales;
+    document.getElementById('profTelefonoFijo').value = data.telefono_fijo || '';
+    document.getElementById('profTelefonoMovil').value = data.telefono_movil || '';
+    document.getElementById('profBiografia').value = data.biografia || '';
 
     const divColegiado = document.getElementById('profColegiado').closest('.form-group');
     const divEspecialidades = document.getElementById('specialtiesContainer').closest('.form-group');
