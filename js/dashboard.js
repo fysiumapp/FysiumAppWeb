@@ -221,6 +221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const unidadesTranscurridas = Math.max(0, Math.floor((hoy.getTime() - new Date(fechaBaseTexto).getTime()) / divisorTiempo));
         const unidadesRestantes = Math.max(0, DIAS_DE_PRUEBA - unidadesTranscurridas);
+        window.diasRestantesPrueba = unidadesRestantes;
 
         // ========================================================
         // 4. LÓGICA DE BLOQUEO
@@ -517,16 +518,54 @@ function configurarPagosStripe(userId, email) {
         return;
     }
 
-    // CASO B: SI ES ClÍNICA O FISIO LIBRE TIENE QUE PAGAR
-    statusText.innerText = "Versión de Prueba Gratuita";
-    statusText.style.color = "#D97706";
-    checkoutBtn.style.display = 'block';
-    secureText.style.display = 'block';
-
-    // DECIDIR CONFIGURACIÓN USANDO EL OBJETO
+    // CASO B: SI ES CLÍNICA O FISIO LIBRE TIENE QUE PAGAR
     const config = (rol === 'clinica') ? STRIPE_CONFIG.CLINICA : STRIPE_CONFIG.FISIO_AUTONOMO;
+    if (plan === 'free') {
+        const diasRestantes = window.diasRestantesPrueba || 0;
 
-    // APLICAR PRECIO DINÁMICO Y GUARDAR EL ID
+        if (diasRestantes > 3) {
+            // ----------------------------------------------------
+            // MÁS DE 3 DÍAS: BOTÓN GRIS Y ANULADO
+            // ----------------------------------------------------
+            statusText.innerText = "Versión de Prueba Activa";
+            statusText.style.color = "#D97706"; // Naranja
+
+            checkoutBtn.style.display = 'block';
+            checkoutBtn.disabled = true; // Anulamos clic
+            checkoutBtn.style.backgroundColor = '#6c757d';
+            checkoutBtn.style.borderColor = '#6c757d';
+            checkoutBtn.style.cursor = 'not-allowed';
+
+            checkoutBtn.innerHTML = `<i class="fa-solid fa-clock"></i> Pago disponible en ${diasRestantes - 3} días`;
+            secureText.style.display = 'none';
+
+            return; // Cortamos aquí para que no enganche con Stripe
+        } else {
+            // ----------------------------------------------------
+            // 3 DÍAS O MENOS: AVISO URGENTE (BOTÓN ACTIVO)
+            // ----------------------------------------------------
+            statusText.innerText = `⚠️ La prueba termina en ${diasRestantes} días`;
+            statusText.style.color = "#EF4444"; // Rojo para destacar urgencia
+        }
+    } else {
+        // ----------------------------------------------------
+        // SI LA PRUEBA YA HA CADUCADO POR COMPLETO (plan === 'expired')
+        // ----------------------------------------------------
+        statusText.innerText = "El periodo de prueba ha expirado";
+        statusText.style.color = "#EF4444";
+    }
+    // ========================================================
+    // CÓDIGO COMÚN PARA ACTIVAR EL BOTÓN (Para los <=3 días o los ya caducados)
+    // ========================================================
+    checkoutBtn.style.display = 'block';
+    checkoutBtn.disabled = false;
+
+    // Restauramos colores nativos por si acaso
+    checkoutBtn.style.backgroundColor = '';
+    checkoutBtn.style.borderColor = '';
+    checkoutBtn.style.cursor = 'pointer';
+
+    secureText.style.display = 'block';
     checkoutBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Suscribirse (${config.precioTexto}/mes)`;
     checkoutBtn.dataset.priceId = config.priceId;
 
