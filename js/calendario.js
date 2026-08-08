@@ -45,6 +45,139 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // -- LÓGICA CLONADA DE LA APP (GENERAR RUTINA)
+    // ==========================================
+    addSafeEventListener('generarRutinaBtn', 'click', () => {
+        const modal = document.getElementById('generarRutinaModal');
+        if (modal) modal.classList.add('active');
+    });
+    addSafeEventListener('cancelGenerarRutinaBtn', 'click', () => {
+        const modal = document.getElementById('generarRutinaModal');
+        if (modal) modal.classList.remove('active');
+    });
+    addSafeEventListener('confirmGenerarRutinaBtn', 'click', async () => {
+        const btn = document.getElementById('confirmGenerarRutinaBtn');
+        const startDate = document.getElementById('rutinaStartDate').value;
+        const endDate = document.getElementById('rutinaEndDate').value;
+        const startTime = document.getElementById('rutinaStartTime').value;
+        const endTime = document.getElementById('rutinaEndTime').value;
+        const price = document.getElementById('rutinaPrice').value;
+        // Recoger días seleccionados (checkboxes)
+        const checkboxes = document.querySelectorAll('#rutinaDiasContainer input[type="checkbox"]:checked');
+        const diasSeleccionados = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        if (!startDate || !endDate || !startTime || !endTime) {
+            return alert("Debes rellenar las fechas y las horas.");
+        }
+        if (diasSeleccionados.length === 0) {
+            return alert("Selecciona al menos un día de la semana.");
+        }
+        btn.textContent = "Generando...";
+        btn.disabled = true;
+        try {
+            // Lógica para clínica o fisio independiente
+            let fisioIdParaGuardar = currentUser.id;
+            if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+                const fisioSelect = document.getElementById('sessionFisioSelect'); // El select que ya tienes en el top
+                if (fisioSelect && fisioSelect.value) fisioIdParaGuardar = fisioSelect.value;
+            }
+            const sesionesAGuardar = [];
+
+            // Lógica exacta de GeneradorRutina.tsx (Bucle fecha a fecha)
+            let fechaActual = new Date(startDate);
+            fechaActual.setHours(0, 0, 0, 0);
+            const fechaFin = new Date(endDate);
+            fechaFin.setHours(0, 0, 0, 0);
+            while (fechaActual <= fechaFin) {
+                // Comprobamos si el día de la semana está seleccionado
+                if (diasSeleccionados.includes(fechaActual.getDay())) {
+                    const y = fechaActual.getFullYear();
+                    const m = String(fechaActual.getMonth() + 1).padStart(2, '0');
+                    const d = String(fechaActual.getDate()).padStart(2, '0');
+                    const diaStr = `${y}-${m}-${d}`;
+                    sesionesAGuardar.push({
+                        fisio_id: fisioIdParaGuardar,
+                        dia: diaStr,
+                        hora: startTime,
+                        hora_fin: endTime,
+                        precio: price ? parseFloat(price) : 0,
+                        estado: 'libre'
+                    });
+                }
+                fechaActual.setDate(fechaActual.getDate() + 1);
+            }
+            if (sesionesAGuardar.length === 0) {
+                alert("No se ha generado ninguna cita. Revisa el rango de fechas.");
+                return;
+            }
+            // Inserción en lote en Supabase
+            const { error } = await supabaseClient.from('horarios_disponibles').insert(sesionesAGuardar);
+            if (error) throw error;
+            alert(`¡Éxito! Se han publicado ${sesionesAGuardar.length} sesiones.`);
+            document.getElementById('generarRutinaModal').classList.remove('active');
+            window.cargarCalendarioMes(); // Refrescar calendario
+        } catch (error) {
+            console.error("Error al generar rutina:", error);
+            alert("No se pudo generar la rutina.");
+        } finally {
+            btn.textContent = "Generar Citas";
+            btn.disabled = false;
+        }
+    });
+    // ==========================================
+    // -- LÓGICA CLONADA DE LA APP (LIMPIAR DÍAS)
+    // ==========================================
+    addSafeEventListener('limpiarDiasBtn', 'click', () => {
+        const modal = document.getElementById('limpiarDiasModal');
+        if (modal) modal.classList.add('active');
+    });
+    addSafeEventListener('cancelLimpiarDiasBtn', 'click', () => {
+        const modal = document.getElementById('limpiarDiasModal');
+        if (modal) modal.classList.remove('active');
+    });
+    addSafeEventListener('confirmLimpiarDiasBtn', 'click', async () => {
+        const btn = document.getElementById('confirmLimpiarDiasBtn');
+        const startDate = document.getElementById('limpiarStartDate').value;
+        const endDate = document.getElementById('limpiarEndDate').value;
+        if (!startDate || !endDate) return alert("Selecciona fecha desde y hasta.");
+        const confirmacion = confirm(`¿Estás seguro de que deseas eliminar todas las sesiones libres entre ${startDate} y ${endDate}?`);
+        if (!confirmacion) return;
+        btn.textContent = "Limpiando...";
+        btn.disabled = true;
+        try {
+            // Buscamos todas las fechas en el rango para pasar al 'in' de Supabase
+            let fechasAborrar = [];
+            let current = new Date(startDate);
+            let end = new Date(endDate);
+
+            while (current <= end) {
+                fechasAborrar.push(current.toISOString().split('T')[0]);
+                current.setDate(current.getDate() + 1);
+            }
+            let fisioIdParaGuardar = currentUser.id;
+            if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+                const fisioSelect = document.getElementById('sessionFisioSelect');
+                if (fisioSelect && fisioSelect.value) fisioIdParaGuardar = fisioSelect.value;
+            }
+            // Exactamente como ejecutarLimpiezaDiasCompletos en la App
+            const { error } = await supabaseClient
+                .from('horarios_disponibles')
+                .delete()
+                .in('dia', fechasAborrar)
+                .eq('estado', 'libre')
+                .eq('fisio_id', fisioIdParaGuardar); // Para no borrar las del compañero si eres clínica
+            if (error) throw error;
+            alert("Días vaciados correctamente.");
+            document.getElementById('limpiarDiasModal').classList.remove('active');
+            window.cargarCalendarioMes(); // Refrescar
+        } catch (error) {
+            console.error("Error al limpiar:", error);
+            alert("Ocurrió un error al limpiar los días.");
+        } finally {
+            btn.textContent = "Vaciar Días";
+            btn.disabled = false;
+        }
+    });
+
     addSafeEventListener('nextMonthBtn', 'click', () => {
         currentMonth.setMonth(currentMonth.getMonth() + 1);
         window.cargarCalendarioMes();

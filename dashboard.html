@@ -96,11 +96,25 @@
 
                         <!-- Columna Derecha: Citas del día seleccionado -->
                         <div class="calendar-day-view card">
-                            <div class="day-header flex-between mb-4">
+                            <div class="day-header flex-between mb-4" style="flex-wrap: wrap; gap: 10px;">
                                 <h3 id="selectedDayTitle">Selecciona un día</h3>
-                                <button id="addSessionBtn" class="primary-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
-                                    <i class="fa-solid fa-plus"></i> Añadir Libre
-                                </button>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <!-- Botón Añadir Sesión (Antiguo Añadir Libre) -->
+                                    <button id="addSessionBtn" class="primary-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                                        <i class="fa-solid fa-plus"></i> Añadir Sesión
+                                    </button>
+
+                                    <!-- Botón Generar Rutina -->
+                                    <button id="generarRutinaBtn" class="primary-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem; background-color: #3b82f6; border-color: #3b82f6;">
+                                        <i class="fa-solid fa-calendar-week"></i> Generar Rutina
+                                    </button>
+
+                                    <!-- Botón Limpiar Días -->
+                                    <button id="limpiarDiasBtn" class="primary-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem; background-color: #ef4444; border-color: #ef4444;">
+                                        <i class="fa-solid fa-trash-can"></i> Limpiar Días
+                                    </button>
+
+                                </div>
                             </div>
                             <div id="daySessionsList" class="day-sessions-list">
                                 <p class="text-light text-center mt-4">Cargando citas...</p>
@@ -120,34 +134,52 @@
                                 <label>Día</label>
                                 <input type="date" id="sessionDate" class="form-control">
                             </div>
-                            <div class="form-group">
-                                <label>Hora Inicio</label>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <select id="sessionStartHour" class="form-control" style="flex: 1; text-align: center;"></select>
-                                    <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
-                                    <select id="sessionStartMin" class="form-control" style="flex: 1; text-align: center;">
-                                        <option value="00">00</option>
-                                        <option value="15">15</option>
-                                        <option value="30">30</option>
-                                        <option value="45">45</option>
-                                    </select>
+                            <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
+                                <div class="form-group">
+                                    <label>Hora Inicio</label>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <select id="sessionStartHour" class="form-control" style="flex: 1; text-align: center;"></select>
+                                        <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
+                                        <select id="sessionStartMin" class="form-control" style="flex: 1; text-align: center;">
+                                            <option value="00">00</option>
+                                            <option value="05">05</option>
+                                            <option value="10">10</option>
+                                            <option value="15">15</option>
+                                            <option value="20">20</option>
+                                            <option value="25">25</option>
+                                            <option value="30">30</option>
+                                            <option value="35">35</option>
+                                            <option value="40">40</option>
+                                            <option value="45">45</option>
+                                            <option value="50">50</option>
+                                            <option value="55">55</option>
+                                        </select>
+                                    </div>
+                                    <input type="hidden" id="sessionStart">
                                 </div>
-                                <input type="hidden" id="sessionStart">
-                            </div>
 
-                            <div class="form-group">
-                                <label>Hora Fin</label>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <select id="sessionEndHour" class="form-control" style="flex: 1; text-align: center;"></select>
-                                    <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
-                                    <select id="sessionEndMin" class="form-control" style="flex: 1; text-align: center;">
-                                        <option value="00">00</option>
-                                        <option value="15">15</option>
-                                        <option value="30">30</option>
-                                        <option value="45">45</option>
-                                    </select>
+                                <div class="form-group">
+                                    <label>Hora Fin</label>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <select id="sessionEndHour" class="form-control" style="flex: 1; text-align: center;"></select>
+                                        <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
+                                        <select id="sessionEndMin" class="form-control" style="flex: 1; text-align: center;">
+                                            <option value="00">00</option>
+                                            <option value="05">05</option>
+                                            <option value="10">10</option>
+                                            <option value="15">15</option>
+                                            <option value="20">20</option>
+                                            <option value="25">25</option>
+                                            <option value="30">30</option>
+                                            <option value="35">35</option>
+                                            <option value="40">40</option>
+                                            <option value="45">45</option>
+                                            <option value="50">50</option>
+                                            <option value="55">55</option>
+                                        </select>
+                                    </div>
+                                    <input type="hidden" id="sessionEnd">
                                 </div>
-                                <input type="hidden" id="sessionEnd">
                             </div>
                             <div class="form-group">
                                 <label for="sessionPrice">Precio (€) <span style="font-weight: normal; color: #7f8c8d;">(Opcional)</span></label>
@@ -156,6 +188,117 @@
                             <div class="modal-actions">
                                 <button id="cancelSessionBtn" class="btn-text text-danger">Cancelar</button>
                                 <button id="saveSessionBtn" class="primary-btn">Guardar Horario</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Generar Rutina (Como en la App) -->
+                    <div id="generarRutinaModal" class="modal">
+                        <div class="modal-content" style="max-width: 500px;">
+                            <h3 style="color: var(--primary);">Generador de Rutina</h3>
+                            <p class="text-light mb-4">Crea múltiples sesiones automáticamente definiendo un rango de fechas y días.</p>
+
+                            <div class="form-group" style="display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label>Desde Fecha</label>
+                                    <input type="date" id="rutinaStartDate" class="form-control">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label>Hasta Fecha</label>
+                                    <input type="date" id="rutinaEndDate" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Días de Trabajo</label>
+                                <div id="rutinaDiasContainer" style="display: flex; gap: 5px; justify-content: space-between;">
+                                    <!-- Values coinciden con getDay() de JS (0=Dom, 1=Lun...) -->
+                                    <label class="checkbox-dia"><input type="checkbox" value="1"> Lun</label>
+                                    <label class="checkbox-dia"><input type="checkbox" value="2"> Mar</label>
+                                    <label class="checkbox-dia"><input type="checkbox" value="3"> Mié</label>
+                                    <label class="checkbox-dia"><input type="checkbox" value="4"> Jue</label>
+                                    <label class="checkbox-dia"><input type="checkbox" value="5"> Vie</label>
+                                    <label class="checkbox-dia"><input type="checkbox" value="6"> Sáb</label>
+                                    <label class="checkbox-dia"><input type="checkbox" value="0"> Dom</label>
+                                </div>
+                            </div>
+                            <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
+                                <div style="flex: 1;">
+                                    <label>Hora Inicio</label>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <select id="rutinaStartHour" class="form-control" style="flex: 1; text-align: center;"></select>
+                                        <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
+                                        <select id="rutinaStartMin" class="form-control" style="flex: 1; text-align: center;">
+                                            <option value="00">00</option>
+                                            <option value="05">05</option>
+                                            <option value="10">10</option>
+                                            <option value="15">15</option>
+                                            <option value="20">20</option>
+                                            <option value="25">25</option>
+                                            <option value="30">30</option>
+                                            <option value="35">35</option>
+                                            <option value="40">40</option>
+                                            <option value="45">45</option>
+                                            <option value="50">50</option>
+                                            <option value="55">55</option>
+                                        </select>
+                                    </div>
+                                    <input type="hidden" id="rutinaStartTime">
+                                </div>
+                                <span style="margin-top: 25px;">-</span>
+                                <div style="flex: 1;">
+                                    <label>Hora Fin</label>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <select id="rutinaEndHour" class="form-control" style="flex: 1; text-align: center;"></select>
+                                        <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
+                                        <select id="rutinaEndMin" class="form-control" style="flex: 1; text-align: center;">
+                                            <option value="00">00</option>
+                                            <option value="05">05</option>
+                                            <option value="10">10</option>
+                                            <option value="15">15</option>
+                                            <option value="20">20</option>
+                                            <option value="25">25</option>
+                                            <option value="30">30</option>
+                                            <option value="35">35</option>
+                                            <option value="40">40</option>
+                                            <option value="45">45</option>
+                                            <option value="50">50</option>
+                                            <option value="55">55</option>
+                                        </select>
+                                    </div>
+                                    <input type="hidden" id="rutinaEndTime">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Precio (€) <span class="text-light">(Opcional)</span></label>
+                                <input type="number" id="rutinaPrice" class="form-control" placeholder="00.00">
+                            </div>
+
+                            <div class="modal-actions mt-4">
+                                <button id="cancelGenerarRutinaBtn" class="btn-text text-danger">Cancelar</button>
+                                <button id="confirmGenerarRutinaBtn" class="primary-btn">Generar Citas</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Modal Limpiar Días (Por rango de fechas) -->
+                    <div id="limpiarDiasModal" class="modal">
+                        <div class="modal-content text-center" style="max-width: 400px;">
+                            <h3 style="color: #ef4444;"><i class="fa-solid fa-trash-can"></i> Limpiar Días</h3>
+                            <p class="mt-3 mb-4">Elimina todas las sesiones <b>Libres</b> en un rango de fechas. Las sesiones ya reservadas NO se borrarán.</p>
+
+                            <div class="form-group" style="display: flex; gap: 10px; text-align: left;">
+                                <div style="flex: 1;">
+                                    <label>Desde</label>
+                                    <input type="date" id="limpiarStartDate" class="form-control">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label>Hasta</label>
+                                    <input type="date" id="limpiarEndDate" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="modal-actions mt-4" style="justify-content: center;">
+                                <button id="cancelLimpiarDiasBtn" class="btn-text">Cancelar</button>
+                                <button id="confirmLimpiarDiasBtn" class="primary-btn" style="background-color: #ef4444; border:none;">Vaciar Días</button>
                             </div>
                         </div>
                     </div>
@@ -595,36 +738,78 @@
             const endMin = document.getElementById('sessionEndMin');
             const endHidden = document.getElementById('sessionEnd');
 
+            const rutinaStartHour = document.getElementById('rutinaStartHour');
+            const rutinaStartMin = document.getElementById('rutinaStartMin');
+            const rutinaStartHidden = document.getElementById('rutinaStartTime');
+
+            const rutinaEndHour = document.getElementById('rutinaEndHour');
+            const rutinaEndMin = document.getElementById('rutinaEndMin');
+            const rutinaEndHidden = document.getElementById('rutinaEndTime');
+
             if (startHour && endHour) {
-                // Generamos de forma limpia un bucle de solo 24 opciones (las horas puras)
+                // Generamos de forma limpia un bucle de solo 24 opciones
                 let hoursHTML = '';
                 for (let h = 0; h < 24; h++) {
                     const horaStr = String(h).padStart(2, '0');
                     hoursHTML += `<option value="${horaStr}">${horaStr}</option>`;
                 }
 
+                // 1. Asignamos a Sesión Individual
                 startHour.innerHTML = hoursHTML;
                 endHour.innerHTML = hoursHTML;
-
-                // Valores por defecto elegantes (9:00 a 10:00)
                 startHour.value = "09";
                 startMin.value = "00";
                 endHour.value = "10";
                 endMin.value = "00";
 
-                // Función mágica que unifica los datos al formato que espera Supabase ("HH:MM")
+                // 2. Asignamos a Rutina
+                if (rutinaStartHour && rutinaEndHour) {
+                    rutinaStartHour.innerHTML = hoursHTML;
+                    rutinaEndHour.innerHTML = hoursHTML;
+                    rutinaStartHour.value = "09";
+                    rutinaStartMin.value = "00";
+                    rutinaEndHour.value = "10";
+                    rutinaEndMin.value = "00";
+                }
+
+                // Función centralizada para volcar los datos a los inputs ocultos
                 const actualizarInputsOcultos = () => {
-                    startHidden.value = `${startHour.value}:${startMin.value}`;
-                    endHidden.value = `${endHour.value}:${endMin.value}`;
+                    if (startHidden) startHidden.value = `${startHour.value}:${startMin.value}`;
+                    if (endHidden) endHidden.value = `${endHour.value}:${endMin.value}`;
+
+                    if (rutinaStartHidden) rutinaStartHidden.value = `${rutinaStartHour.value}:${rutinaStartMin.value}`;
+                    if (rutinaEndHidden) rutinaEndHidden.value = `${rutinaEndHour.value}:${rutinaEndMin.value}`;
                 };
 
-                // Escuchamos los cambios de los selectores visuales
-                startHour.addEventListener('change', actualizarInputsOcultos);
+                // Sumar 1 hora automáticamente
+                const autoAjustarHoraFin = (selectInicio, selectFin) => {
+                    let horaSeleccionada = parseInt(selectInicio.value, 10);
+                    // Sumamos 1. El "% 24" hace que si son las 23, pase automáticamente a 00.
+                    let horaSiguiente = (horaSeleccionada + 1) % 24;
+                    selectFin.value = String(horaSiguiente).padStart(2, '0');
+                };
+
+                // Escuchadores Sesión Individual
+                startHour.addEventListener('change', () => {
+                    autoAjustarHoraFin(startHour, endHour); // Ajusta la hora de fin primero
+                    actualizarInputsOcultos(); // Luego guarda los datos
+                });
                 startMin.addEventListener('change', actualizarInputsOcultos);
                 endHour.addEventListener('change', actualizarInputsOcultos);
                 endMin.addEventListener('change', actualizarInputsOcultos);
 
-                // Inicializamos los valores por primera vez en segundo plano
+                // Escuchadores Rutina
+                if (rutinaStartHour) {
+                    rutinaStartHour.addEventListener('change', () => {
+                        autoAjustarHoraFin(rutinaStartHour, rutinaEndHour);
+                        actualizarInputsOcultos();
+                    });
+                    rutinaStartMin.addEventListener('change', actualizarInputsOcultos);
+                    rutinaEndHour.addEventListener('change', actualizarInputsOcultos);
+                    rutinaEndMin.addEventListener('change', actualizarInputsOcultos);
+                }
+
+                // Ejecutar por primera vez al cargar la página
                 actualizarInputsOcultos();
             }
         });
