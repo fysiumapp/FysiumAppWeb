@@ -2,9 +2,9 @@ let currentUser = null;
 
 // const DIAS_DE_PRUEBA = 15;
 
-const DIAS_DE_PRUEBA = 100;
+const DIAS_DE_PRUEBA = 90;
 
-const HITOS_AVISO = [0, 30, 60, 90];
+const HITOS_AVISO = [0, 30, 60, 80];
 
 document.addEventListener('DOMContentLoaded', async () => {
     // PROTEGER RUTA
@@ -969,7 +969,7 @@ function mostrarModalWeb(hito, diasRestantes) {
 
     switch (hito) {
         case 0:
-            title.innerText = 'Prueba de 100 días activada';
+            title.innerText = 'Prueba de 90 días activada';
             body.innerText = 'Bienvenido al panel web. Hemos activado tu licencia con acceso a todas las funciones. No necesitas tarjeta de crédito. Cuando termine el plazo, podrás elegir uno de nuestros planes desde la pestaña "Mi Perfil".';
             iconBg.style.backgroundColor = 'var(--primary)';
             icon.className = 'fa-solid fa-rocket';
