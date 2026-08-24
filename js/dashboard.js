@@ -48,116 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         userData = data;
     }
 
-    // --- LÓGICA DE BLOQUEO WEB ---
-    //     let plan = userData.plan_suscripcion || 'free';
-    //     let cuentaBloqueada = false;
-    //     let fechaRegistroBase = new Date(currentUser.created_at);
-    // 
-    //     if (rol === 'fisio' && userData.clinica_id) {
-    //         const { data: clinicaAsociada } = await supabaseClient
-    //             .from('clinicas')
-    //             .select('plan_suscripcion, fecha_fin_prueba, created_at, user_id')
-    //             .eq('id', userData.clinica_id)
-    //             .single();
-    // 
-    //         if (clinicaAsociada) {
-    // SINCRONIZAR BBDD SI EL FISIO TIENE PLAN DISTINTO AL DE LA CLÍNICA
-    //             const planFisioActual = (userData.plan_suscripcion || '').trim().toLowerCase();
-    //             const planPadreClean = (clinicaAsociada.plan_suscripcion || '').trim().toLowerCase();
-    //             if (planFisioActual !== planPadreClean) {
-    //                 supabaseClient.from('fisios').update({ plan_suscripcion: planPadreClean }).eq('user_id', currentUser.id).then();
-    //             }
-    // 
-    //             userData.plan_suscripcion = clinicaAsociada.plan_suscripcion;
-    //             userData.fecha_fin_prueba = clinicaAsociada.fecha_fin_prueba;
-    // 
-    //             let realCreatedAt = clinicaAsociada.created_at;
-    //             if (clinicaAsociada.user_id) {
-    //                 const { data: perfilData } = await supabaseClient.from('gestion_perfil')
-    //                     .select('created_at')
-    //                     .eq('user_id', clinicaAsociada.user_id)
-    //                     .single();
-    //                 if (perfilData && perfilData.created_at) {
-    //                     realCreatedAt = perfilData.created_at;
-    //                 } else {
-    //                     const { data: authUserData } = await supabaseClient.from('auth_user')
-    //                         .select('created_at')
-    //                         .eq('id_supabase', clinicaAsociada.user_id)
-    //                         .single();
-    //                     if (authUserData && authUserData.created_at) {
-    //                         realCreatedAt = authUserData.created_at;
-    //                     }
-    //                 }
-    //             }
-    //             if (realCreatedAt) {
-    //                 fechaRegistroBase = new Date(realCreatedAt);
-    //             }
-    //         }
-    //     } else if (rol === 'fisio' && userData.created_at) {
-    //         fechaRegistroBase = new Date(userData.created_at);
-    //     }
-    // 
-    //     plan = userData.plan_suscripcion || 'free'; // ACTUALIZAR PLAN TRAS LA HERENCIA
-    // 
-    //     if (plan === 'free' || plan === 'beta') {
-    //         const hoy = new Date();
-    //         if (userData.fecha_fin_prueba) {
-    // ...
-    //         } else {
-    // const diasTranscurridos = Math.floor((hoy.getTime() - fechaRegistroBase.getTime()) / (1000 * 60 * 60 * 24));
-    //             const diasTranscurridos = Math.floor((hoy.getTime() - fechaRegistroBase.getTime()) / (1000 * 60));
-    //             if (diasTranscurridos > DIAS_DE_PRUEBA) cuentaBloqueada = true;
-    //         }
-    //     }
-    // --- MODOS CON ACCESO TOTAL (Vitalicio, Lifetime o Pagado) ---
-    //     else if (plan === 'lifetime' || plan === 'vitalicio' || plan === 'subscribed') {
-    //         cuentaBloqueada = false; // ACCESO LIBRE, NO SE BLOQUEA NADA
-    //     }
-    // --- SUSCRIPCIÓN CANCELADA O IMPAGADA ---
-    //     else if (plan === 'expired' || plan === 'inactive') {
-    //         cuentaBloqueada = true;
-    //     }
-    // 
-    // SI LA CUENTA ESTÁ BLOQUEADA MENSAJE CERROJO
-    // if (cuentaBloqueada) {
-    //     // AUTO-UPDATE DB EN LA WEB PARA MANTENER LA TABLA SINCRONIZADA
-    //     if (rol === 'clinica') {
-    //         supabaseClient.from('clinicas').update({ plan_suscripcion: 'expired' }).eq('user_id', currentUser.id).then();
-    //         supabaseClient.from('fisios').update({ plan_suscripcion: 'expired' }).eq('clinica_id', userData.id).then();
-    //     } else if (rol === 'fisio') {
-    //         supabaseClient.from('fisios').update({ plan_suscripcion: 'expired' }).eq('user_id', currentUser.id).then();
-    //     }
-    // 
-    //     // BLOQUEO VISUAL FUERTE
-    //     // BORRAR PESTAÑAS Y DEJAR SOLO PERFIL
-    //     const style = document.createElement('style');
-    //     style.innerHTML = `
-    //         .nav-item:not([data-tab="perfil"]) {
-    //             display: none !important;
-    //         }
-    //     `;
-    //     document.head.appendChild(style);
-    // 
-    //     // DESACTIVAR LA FUNCIÓN DEL CALENDARIO PARA QUE NO SE EJECUTE
-    //     window.cargarCalendarioMes = function () { };
-    // 
-    //     // ELIMINAR TODAS LAS CLASES ACTIVE
-    //     document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-    //     document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
-    // 
-    //     // FORZAR CLASE ACTIVE SOLO EN EL PERFIL
-    //     const perfilNav = document.querySelector('.nav-item[data-tab="perfil"]');
-    //     const perfilTab = document.getElementById('tab-perfil');
-    //     if (perfilNav) perfilNav.classList.add('active');
-    //     if (perfilTab) perfilTab.classList.add('active');
-    //     const pageTitle = document.getElementById('pageTitle');
-    //     if (pageTitle) pageTitle.textContent = "Mi Perfil";
-    // 
-    //     setTimeout(() => {
-    //         alert("Tu periodo de acceso ha expirado. Por favor, renueva tu suscripción de forma segura con Stripe para desbloquear tu agenda y pacientes.");
-    //     }, 100);
-    // }
-    // 
     // --- LÓGICA DE BLOQUEO WEB (FUNCIÓN) ---
     window.comprobarEstadoSuscripcion = async function () {
         let plan = userData.plan_suscripcion || 'free';
@@ -352,6 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // DISPARAR EVENTOS Y RECARGAR SI ES NECESARIO
             if (target === 'calendario' && window.cargarCalendarioMes) window.cargarCalendarioMes();
             if (target === 'pacientes' && window.cargarPacientes) window.cargarPacientes();
+            if (target === 'citas' && window.cargarTodasLasCitas) window.cargarTodasLasCitas();
         });
     });
 

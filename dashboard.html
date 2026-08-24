@@ -34,6 +34,9 @@
                 <button class="nav-item" data-tab="fisios" id="navFisios" style="display: none;">
                     <i class="fa-solid fa-user-doctor"></i> Fisios Asociados
                 </button>
+                <button class="nav-item" data-tab="citas">
+                    <i class="fa-solid fa-list-check"></i> Todas las Citas
+                </button>
                 <button class="nav-item" data-tab="perfil">
                     <i class="fa-regular fa-user"></i> <span id="navPerfilText">Mi Perfil</span>
                 </button>
@@ -586,6 +589,22 @@
                     </div>
                 </div>
 
+                <!-- Pestaña: TODAS LAS CITAS -->
+                <section id="tab-citas" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header flex-between">
+                            <h2>Todas las Citas</h2>
+                            <div class="search-box">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="buscadorCitas" placeholder="Buscar por paciente o fisio..." class="form-control" onkeyup="if(window.filtrarCitasWeb) window.filtrarCitasWeb()">
+                            </div>
+                        </div>
+                        <div id="listaTodasLasCitas" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+                            <div class="loading-spinner">Cargando citas...</div>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Pestaña: PERFIL -->
                 <section id="tab-perfil" class="tab-pane">
                     <div class="card" style="max-width: 600px; margin: 0 auto;">
@@ -727,6 +746,7 @@
     <!-- Componentes de las pestañas -->
     <script src="js/calendario.js"></script>
     <script src="js/pacientes.js"></script>
+    <script src="js/citas.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
