@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = 'login.html';
     return;
   }
-  
+
   clinicEmail = session.user.email;
 
   async function cargarDatos() {
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderFisios() {
     fisiosCountSpan.textContent = fisios.length;
     fisiosListContainer.innerHTML = '';
-    
+
     if (fisios.length > 0) {
       const h4 = document.createElement('h4');
       h4.textContent = "Fisioterapeutas creados:";
@@ -118,13 +118,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { data: authF, error: errF } = await supabaseClient.auth.signUp({
         email: fEmail,
         password: fPassword,
-        options: { data: { full_name: fNombre, telefono: fisioTelefonoFinal } }
+        options: {
+          data: { full_name: fNombre, telefono: fisioTelefonoFinal },
+          emailRedirectTo: 'https://fysiumapp.es/confirmado.html'
+        }
       });
       if (errF) throw new Error(errF.message);
 
       // 2. Roles e inserts
       await supabaseClient.from('gestion_perfil').update({ rol: 'fisio' }).eq('user_id', authF.user.id);
-      
+
       if (fisioTelefonoFinal !== 'Sin teléfono') {
         await supabaseClient.from('auth_user').update({ telefono: fisioTelefonoFinal }).eq('id_supabase', authF.user.id);
       }
@@ -146,15 +149,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       fisios.push(newFisio);
       renderFisios();
-      
+
       // Limpiar form
       document.getElementById('fNombre').value = '';
       document.getElementById('fEmail').value = '';
       document.getElementById('fTelefono').value = '';
       document.getElementById('fPassword').value = '';
       document.getElementById('cPassword').value = '';
-      
-      showSuccess("Fisioterapeuta añadido correctamente.");
+
+      showSuccess("Fisioterapeuta añadido. Se le ha enviado un correo para que confirme su cuenta.");
 
     } catch (err) {
       showError(err.message);

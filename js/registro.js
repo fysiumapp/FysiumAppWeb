@@ -120,7 +120,7 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
     return showError("Debes aceptar los Términos y la Política de Privacidad.");
   }
 
-    // Se elimina la validación de 2 fisios mínimos aquí, ya que ahora se hace en el onboarding
+  // Se elimina la validación de 2 fisios mínimos aquí, ya que ahora se hace en el onboarding
 
   // Preparar UI para cargar
   submitBtn.disabled = true;
@@ -158,7 +158,10 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
       const { data: authC, error: errC } = await supabaseClient.auth.signUp({
         email: email,
         password: password,
-        options: { data: { full_name: nombre, telefono: telefonoAGuardar } }
+        options: {
+          data: { full_name: nombre, telefono: telefonoAGuardar },
+          emailRedirectTo: 'https://fysiumapp.es/confirmado.html'
+        }
       });
       if (errC) throw new Error(errC.message);
       if (!authC.user) throw new Error("No se pudo crear la clínica");
@@ -188,7 +191,10 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
       const { data: authData, error: authError } = await supabaseClient.auth.signUp({
         email: email,
         password: password,
-        options: { data: { full_name: nombre, telefono: telefonoAGuardar } }
+        options: {
+          data: { full_name: nombre, telefono: telefonoAGuardar },
+          emailRedirectTo: 'https://fysiumapp.es/confirmado.html'
+        }
       });
 
       if (authError) throw new Error(authError.message);
@@ -209,7 +215,7 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
     }
 
     // Éxito: Redirigir al login o al dashboard web
-    alert("Cuenta creada correctamente. Bienvenido a Fysium.");
+    alert("¡Casi listo! Revisa tu bandeja de entrada (y Spam) para confirmar tu correo antes de entrar.");
     window.location.href = 'login.html';
 
   } catch (error) {
