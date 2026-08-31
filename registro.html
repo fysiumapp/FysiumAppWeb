@@ -32,7 +32,7 @@
 
       <form id="registroForm" class="login-form">
         <div class="form-group">
-          <label id="labelNombre" for="nombre">Nombre Completo</label>
+          <label id="labelNombre" for="nombre">Nombre y Apellidos</label>
           <input type="text" id="nombre" class="form-control" required placeholder="Tu nombre o el de la clínica">
         </div>
 
@@ -84,7 +84,17 @@
 
         <div class="form-group">
           <label for="password">Contraseña</label>
-          <input type="password" id="password" class="form-control" required placeholder="••••••••">
+          <div style="position: relative;">
+            <input type="password" id="password" class="form-control" required placeholder="••••••••" style="padding-right: 40px;">
+            <button type="button" id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="passwordConfirm">Confirmar Contraseña</label>
+          <div style="position: relative;">
+            <input type="password" id="passwordConfirm" class="form-control" required placeholder="••••••••">
+          </div>
         </div>
 
 
