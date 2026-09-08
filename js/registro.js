@@ -184,10 +184,10 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
 
       if (errClinica) throw new Error(`Error en datos de clínica: ${errClinica.message}`);
 
-      // 4. Autenticar y redirigir al Onboarding
-      await supabaseClient.auth.signInWithPassword({ email: email, password: password });
-      window.location.href = 'configuracion-clinica.html';
-      return;
+      // // 4. Autenticar y redirigir al Onboarding
+      // await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+      // window.location.href = 'configuracion-clinica.html';
+      // return;
 
     }
     // ----- REGISTRO FISIO INDIVIDUAL -----
