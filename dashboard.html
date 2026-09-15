@@ -26,16 +26,16 @@
                     <i class="fa-regular fa-calendar-days"></i> Calendario
                 </button>
                 <button class="nav-item" data-tab="pacientes">
-                    <i class="fa-solid fa-users"></i> Mis Pacientes
+                    <i class="fa-solid fa-users"></i> Mis Clientes
                 </button>
                 <button class="nav-item" data-tab="nuevo-paciente">
-                    <i class="fa-solid fa-user-plus"></i> Nuevo Paciente
+                    <i class="fa-solid fa-user-plus"></i> Nuevo Cliente
                 </button>
                 <button class="nav-item" data-tab="fisios" id="navFisios" style="display: none;">
-                    <i class="fa-solid fa-user-doctor"></i> Fisios Asociados
+                    <i class="fa-solid fa-users-gear"></i> Profesionales Asociados
                 </button>
                 <button class="nav-item" data-tab="citas">
-                    <i class="fa-solid fa-list-check"></i> Todas las Citas
+                    <i class="fa-solid fa-list-check"></i> Todas las Sesiones
                 </button>
                 <button class="nav-item" data-tab="perfil">
                     <i class="fa-regular fa-user"></i> <span id="navPerfilText">Mi Perfil</span>
@@ -120,7 +120,7 @@
                                 </div>
                             </div>
                             <div id="daySessionsList" class="day-sessions-list">
-                                <p class="text-light text-center mt-4">Cargando citas...</p>
+                                <p class="text-light text-center mt-4">Cargando sesiones...</p>
                             </div>
                         </div>
                     </div>
@@ -130,7 +130,7 @@
                         <div class="modal-content">
                             <h3>Nuevo Horario</h3>
                             <div class="form-group" id="groupSelectFisio" style="display: none;">
-                                <label>Fisioterapeuta</label>
+                                <label>Profesional</label>
                                 <select id="sessionFisioSelect" class="form-control"></select>
                             </div>
                             <div class="form-group">
@@ -278,7 +278,7 @@
 
                             <div class="modal-actions mt-4">
                                 <button id="cancelGenerarRutinaBtn" class="btn-text text-danger">Cancelar</button>
-                                <button id="confirmGenerarRutinaBtn" class="primary-btn">Generar Citas</button>
+                                <button id="confirmGenerarRutinaBtn" class="primary-btn">Generar Sesiones</button>
                             </div>
                         </div>
                     </div>
@@ -311,17 +311,17 @@
                         <div class="modal-content" style="position: relative; max-width: 450px;">
                             <button onclick="document.getElementById('bookSessionModal').classList.remove('active')" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer;">&times;</button>
 
-                            <h3 style="margin-bottom: 20px; color: var(--primary);">Reservar Cita</h3>
+                            <h3 style="margin-bottom: 20px; color: var(--primary);">Reservar Sesión</h3>
 
                             <div class="tabs">
-                                <button id="tabPacientesBtn" onclick="mostrarSeccion('pacientes')">Paciente Guardado</button>
-                                <button id="tabNuevoBtn" onclick="mostrarSeccion('nuevo')">Nuevo Paciente</button>
+                                <button id="tabPacientesBtn" onclick="mostrarSeccion('pacientes')">Cliente Guardado</button>
+                                <button id="tabNuevoBtn" onclick="mostrarSeccion('nuevo')">Nuevo Cliente</button>
                             </div>
 
                             <div id="seccionPacientes" class="modal-seccion">
                                 <div class="search-box mb-4 w-100">
                                     <i class="fa-solid fa-search"></i>
-                                    <input type="text" id="buscadorPaciente" placeholder="Buscar paciente..." class="form-control" onkeyup="filtrarPacientes()">
+                                    <input type="text" id="buscadorPaciente" placeholder="Buscar cliente..." class="form-control" onkeyup="filtrarPacientes()">
                                 </div>
                                 <ul id="listaPacientesGuardados"></ul>
                             </div>
@@ -329,7 +329,7 @@
                             <div id="seccionNuevo" class="modal-seccion" style="display:none;">
                                 <div style="background-color: #FFF3CD; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: flex-start; gap: 10px;">
                                     <i class="fa-solid fa-circle-info" style="color: #856404; margin-top: 3px;"></i>
-                                    <p style="color: #856404; font-size: 0.85rem; margin: 0;">Se creará un paciente <b>sin cuenta</b> en la app. Solo tú tendrás acceso a sus datos.</p>
+                                    <p style="color: #856404; font-size: 0.85rem; margin: 0;">Se creará un cliente <b>sin cuenta</b> en la app. Solo tú tendrás acceso a sus datos.</p>
                                 </div>
 
                                 <div class="form-group">
@@ -367,14 +367,14 @@
                 <section id="tab-pacientes" class="tab-pane">
                     <div class="card">
                         <div class="card-header flex-between">
-                            <h2>Mis Pacientes Guardados</h2>
+                            <h2>Mis Clientes Guardados</h2>
                             <div class="search-box">
                                 <i class="fa-solid fa-search"></i>
-                                <input type="text" id="searchPatientInput" placeholder="Buscar paciente..." class="form-control">
+                                <input type="text" id="searchPatientInput" placeholder="Buscar cliente..." class="form-control">
                             </div>
                         </div>
                         <div class="patients-list" id="patientsList">
-                            <div class="loading-spinner">Cargando pacientes...</div>
+                            <div class="loading-spinner">Cargando clientes...</div>
                         </div>
                     </div>
                 </section>
@@ -383,7 +383,7 @@
                 <section id="tab-detalle-paciente" class="tab-pane">
                     <div class="flex-between mb-4">
                         <button id="backToPatientsBtn" class="btn-text" style="color: var(--primary);">
-                            <i class="fa-solid fa-arrow-left"></i> Volver a Pacientes
+                            <i class="fa-solid fa-arrow-left"></i> Volver a Clientes
                         </button>
                     </div>
 
@@ -391,10 +391,10 @@
                         <!-- Info Básica y Tratamiento -->
                         <div class="card">
                             <div class="profile-header text-center mb-4">
-                                <div class="avatar-large mx-auto" id="dpAvatar">P</div>
-                                <h3 id="dpName" class="mt-2">Nombre Paciente</h3>
+                                <div class="avatar-large mx-auto" id="dpAvatar">C</div>
+                                <h3 id="dpName" class="mt-2">Nombre Cliente</h3>
                                 <button id="quitarPacienteBtn" class="btn-text" style="color: #e74c3c; font-size: 0.8rem; margin-top: 5px;">
-                                    <i class="fa-solid fa-trash"></i> Retirar de mis pacientes
+                                    <i class="fa-solid fa-trash"></i> Retirar de mis clientes
                                 </button>
                             </div>
 
@@ -416,7 +416,7 @@
 
                             <!-- Duración -->
                             <div class="mb-4">
-                                <h4><i class="fa-solid fa-stopwatch" style="color: var(--primary)"></i> Duración del Tratamiento</h4>
+                                <h4><i class="fa-solid fa-stopwatch" style="color: var(--primary)"></i> Duración del Plan</h4>
                                 <div class="duration-controls mt-2" id="dpDuracion">
                                     <div class="duration-group">
                                         <label>Días</label>
@@ -441,16 +441,16 @@
 
                             <!-- Notas para el paciente -->
                             <div class="mb-4">
-                                <h4><i class="fa-solid fa-file-signature" style="color: #e74c3c"></i> Notas para el Paciente</h4>
+                                <h4><i class="fa-solid fa-file-signature" style="color: #e74c3c"></i> Notas para el Cliente</h4>
                                 <textarea id="dpNotas" class="form-control mt-2" style="height: 100px; resize: vertical;" placeholder="Ej: Reposo activo, aplicar frío tras ejercicio..."></textarea>
                             </div>
 
                             <hr style="border:0; border-top:1px solid var(--border); margin: 1.5rem 0;">
 
                             <div class="private-box mb-4">
-                                <h4><i class="fa-solid fa-lock" style="color: #D97706"></i> Tratamiento Privado</h4>
+                                <h4><i class="fa-solid fa-lock" style="color: #D97706"></i> Notas Privadas / Seguimiento</h4>
                                 <p style="font-size: 0.85rem; margin-bottom: 1rem; color: #92400E;">Solo tú puedes ver estas notas.</p>
-                                <textarea id="dpTratamiento" class="form-control" style="height: 150px; resize: vertical; border-color:#FDE68A; background:rgba(255,255,255,0.7)" placeholder="Anota aquí la evolución, diagnóstico..."></textarea>
+                                <textarea id="dpTratamiento" class="form-control" style="height: 150px; resize: vertical; border-color:#FDE68A; background:rgba(255,255,255,0.7)" placeholder="Anota aquí la evolución, notas internas..."></textarea>
                             </div>
 
                             <button id="saveTratamientoBtn" class="primary-btn w-100">Guardar Ficha</button>
@@ -469,13 +469,13 @@
                 <!-- Pestaña: NUEVO PACIENTE -->
                 <section id="tab-nuevo-paciente" class="tab-pane">
                     <div class="card" style="max-width: 600px; margin: 0 auto;">
-                        <h2>Dar de alta un Paciente</h2>
-                        <p class="text-light mb-4">Crea un registro de paciente para poder asignarle citas manualmente. (Paciente fantasma)</p>
+                        <h2>Dar de alta un Cliente</h2>
+                        <p class="text-light mb-4">Crea un registro de cliente para poder asignarle sesiones manualmente. (Cliente manual)</p>
 
                         <form id="newPatientForm">
                             <div style="background-color: #FFF3CD; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px;">
                                 <i class="fa-solid fa-circle-info" style="color: #856404; margin-top: 3px;"></i>
-                                <p style="color: #856404; font-size: 0.85rem; margin: 0;">Estás creando un paciente <b>sin cuenta</b> en la app. Solo tú tendrás acceso a sus datos y seguimiento.</p>
+                                <p style="color: #856404; font-size: 0.85rem; margin: 0;">Estás creando un cliente <b>sin cuenta</b> en la app. Solo tú tendrás acceso a sus datos y seguimiento.</p>
                             </div>
 
                             <div class="form-group">
@@ -499,7 +499,7 @@
                                 <label>Fecha de nacimiento (Opcional)</label>
                                 <input type="text" id="np-dob" class="form-control" placeholder="DD/MM/AAAA">
                             </div>
-                            <button type="submit" id="submitNewPatientBtn" class="primary-btn w-100 mt-4">Guardar Paciente</button>
+                            <button type="submit" id="submitNewPatientBtn" class="primary-btn w-100 mt-4">Guardar Cliente</button>
                         </form>
                     </div>
                 </section>
@@ -508,15 +508,15 @@
                 <section id="tab-fisios" class="tab-pane">
                     <div class="card" style="max-width: 800px; margin: 0 auto;">
                         <div class="flex-between mb-4">
-                            <h2>Fisios Asociados</h2>
+                            <h2>Profesionales Asociados</h2>
                             <button id="addFisioModalBtn" class="primary-btn" style="padding: 0.5rem 1rem;">
-                                <i class="fa-solid fa-plus"></i> Añadir Fisio
+                                <i class="fa-solid fa-plus"></i> Añadir Profesional
                             </button>
                         </div>
-                        <p class="text-light mb-4">Gestiona los fisioterapeutas asociados a tu clínica. Cada fisio adicional tiene un coste de 9,95€/mes.</p>
+                        <p class="text-light mb-4">Gestiona los profesionales asociados a tu centro. Cada profesional adicional tiene un coste de 9,95€/mes.</p>
 
                         <div id="listaFisiosClinica" style="display: flex; flex-direction: column; gap: 15px;">
-                            <div class="loading-spinner">Cargando fisios...</div>
+                            <div class="loading-spinner">Cargando profesionales...</div>
                         </div>
                     </div>
                 </section>
@@ -525,13 +525,13 @@
                 <div id="modalAddFisio" class="modal" onclick="if(event.target === this) this.classList.remove('active')">
                     <div class="modal-content" style="max-width: 450px; position: relative;">
                         <button onclick="document.getElementById('modalAddFisio').classList.remove('active')" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer;">&times;</button>
-                        <h3 style="margin-bottom: 20px; color: var(--primary);">Añadir Fisioterapeuta</h3>
+                        <h3 style="margin-bottom: 20px; color: var(--primary);">Añadir Profesional</h3>
                         <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">
-                            Crearemos un acceso para tu fisioterapeuta. Te pediremos la contraseña actual de tu clínica como medida de seguridad.
+                            Crearemos un acceso para tu profesional. Te pediremos la contraseña actual de tu centro como medida de seguridad.
                         </p>
                         <div class="form-group">
                             <label>Nombre Completo</label>
-                            <input type="text" id="addFisioName" class="form-control" placeholder="Nombre del fisio">
+                            <input type="text" id="addFisioName" class="form-control" placeholder="Nombre del profesional">
                         </div>
                         <div class="form-group">
                             <label>Email (acceso)</label>
@@ -547,15 +547,15 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Contraseña para el Fisio</label>
+                            <label>Contraseña para el Profesional</label>
                             <input type="password" id="addFisioPwd" class="form-control" placeholder="Min. 6 caracteres">
                         </div>
                         <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
                         <div class="form-group">
-                            <label style="color: var(--danger);">Confirmar identidad (Tu contraseña de clínica)</label>
-                            <input type="password" id="addFisioAdminPwd" class="form-control" placeholder="Contraseña de la clínica">
+                            <label style="color: var(--danger);">Confirmar identidad (Tu contraseña del Centro)</label>
+                            <input type="password" id="addFisioAdminPwd" class="form-control" placeholder="Contraseña del centro">
                         </div>
-                        <button id="submitAddFisioBtn" class="primary-btn w-100 mt-3">Registrar Fisio</button>
+                        <button id="submitAddFisioBtn" class="primary-btn w-100 mt-3">Registrar Profesional</button>
                     </div>
                 </div>
 
@@ -565,7 +565,7 @@
                         <button onclick="document.getElementById('modalDetalleFisio').classList.remove('active')" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer;">&times;</button>
 
                         <div class="text-center mb-4 mt-3">
-                            <div class="avatar-large mx-auto mb-3" id="dfAvatar" style="font-size: 2.5rem;">F</div>
+                            <div class="avatar-large mx-auto mb-3" id="dfAvatar" style="font-size: 2.5rem;">P</div>
                             <h2 id="dfName">Cargando...</h2>
                             <p class="text-light" id="dfEmail" style="margin-bottom: 5px;">correo@ejemplo.com</p>
                             <p class="text-light" id="dfPhone"><i class="fa-solid fa-phone"></i> <span>600 000 000</span></p>
@@ -574,12 +574,12 @@
                         <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 1.5rem; display: flex; justify-content: space-around;">
                             <div>
                                 <h3 id="dfTerminadas" style="color: var(--primary); font-size: 2rem;">0</h3>
-                                <p style="font-size: 0.8rem; color: var(--text-light); text-transform: uppercase;">Citas Terminadas</p>
+                                <p style="font-size: 0.8rem; color: var(--text-light); text-transform: uppercase;">Sesiones Terminadas</p>
                             </div>
                             <div style="width: 1px; background-color: #E2E8F0;"></div>
                             <div>
                                 <h3 id="dfProximas" style="color: var(--secondary); font-size: 2rem;">0</h3>
-                                <p style="font-size: 0.8rem; color: var(--text-light); text-transform: uppercase;">Citas Próximas</p>
+                                <p style="font-size: 0.8rem; color: var(--text-light); text-transform: uppercase;">Sesiones Próximas</p>
                             </div>
                         </div>
 
@@ -593,14 +593,14 @@
                 <section id="tab-citas" class="tab-pane">
                     <div class="card">
                         <div class="card-header flex-between">
-                            <h2>Todas las Citas</h2>
+                            <h2>Todas las Sesiones</h2>
                             <div class="search-box">
                                 <i class="fa-solid fa-search"></i>
-                                <input type="text" id="buscadorCitas" placeholder="Buscar por paciente o fisio..." class="form-control" onkeyup="if(window.filtrarCitasWeb) window.filtrarCitasWeb()">
+                                <input type="text" id="buscadorCitas" placeholder="Buscar por cliente o profesional..." class="form-control" onkeyup="if(window.filtrarCitasWeb) window.filtrarCitasWeb()">
                             </div>
                         </div>
                         <div id="listaTodasLasCitas" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-                            <div class="loading-spinner">Cargando citas...</div>
+                            <div class="loading-spinner">Cargando sesiones...</div>
                         </div>
                     </div>
                 </section>
@@ -611,7 +611,7 @@
                         <div class="text-center mb-4">
                             <div class="avatar-large mx-auto mb-3" id="profileAvatarBig" style="font-size: 2.5rem;">F</div>
                             <h2 id="profileTitleName">Cargando...</h2>
-                            <p class="text-light" id="profileTitleRole">Fisioterapeuta</p>
+                            <p class="text-light" id="profileTitleRole">Profesional</p>
                         </div>
 
                         <form id="profileForm">
@@ -631,7 +631,7 @@
                             </div>
 
                             <hr style="border:0; border-top:1px solid var(--border); margin: 2rem 0;">
-                            <h4 style="color: var(--primary); margin-bottom: 1rem;">Datos Públicos (App Pacientes)</h4>
+                            <h4 style="color: var(--primary); margin-bottom: 1rem;">Datos Públicos (App Clientes)</h4>
 
                             <div class="form-group mb-4">
                                 <label><i class="fa-solid fa-phone text-light"></i> Teléfono Fijo (Opcional)</label>
@@ -643,17 +643,17 @@
                             </div>
                             <div class="form-group mb-4">
                                 <label><i class="fa-solid fa-align-left text-light"></i> Biografía / Descripción (Opcional)</label>
-                                <textarea id="profBiografia" class="form-control" placeholder="Cuenta un poco sobre ti o tu clínica..." rows="4" style="resize: vertical;"></textarea>
+                                <textarea id="profBiografia" class="form-control" placeholder="Cuenta un poco sobre ti o tu centro..." rows="4" style="resize: vertical;"></textarea>
                             </div>
 
                             <div class="form-group mb-4">
-                                <label><i class="fa-solid fa-id-card text-light"></i> Número de Colegiado (Opcional)</label>
+                                <label><i class="fa-solid fa-id-card text-light"></i> Nº de Registro o Acreditación (Opcional)</label>
                                 <input type="text" id="profColegiado" class="form-control" placeholder="Ej: 12345">
                             </div>
 
                             <div class="form-group mb-4">
                                 <label><i class="fa-brands fa-instagram text-light"></i> Redes Sociales / Enlace (Opcional)</label>
-                                <input type="text" id="profRedes" class="form-control" placeholder="Ej: https://instagram.com/mi_fisio">
+                                <input type="text" id="profRedes" class="form-control" placeholder="Ej: https://instagram.com/mi_perfil">
                             </div>
 
                             <div class="form-group mb-4">

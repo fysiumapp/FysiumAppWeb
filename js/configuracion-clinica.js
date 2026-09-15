@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (fisios.length > 0) {
       const h4 = document.createElement('h4');
-      h4.textContent = "Fisioterapeutas creados:";
+      h4.textContent = "Profesionales creados:";
       h4.style.marginTop = "0";
       fisiosListContainer.appendChild(h4);
     }
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       btnEntrar.style.backgroundColor = '#ccc';
       btnEntrar.style.cursor = 'not-allowed';
       btnEntrar.disabled = true;
-      btnEntrar.textContent = `Faltan ${faltan} fisios para continuar`;
+      btnEntrar.textContent = `Faltan ${faltan} profesionales para continuar`;
     }
   }
 
@@ -141,11 +141,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         clinica_id: clinicaId
       }).select().single();
 
-      if (errInsert) throw new Error("Error vinculando al fisio en la base de datos.");
+      if (errInsert) throw new Error("Error vinculando al profesional en la base de datos.");
 
-      // 3. Reconectar clínica
+      // 3. Reconectar centro
       const { error: loginError } = await supabaseClient.auth.signInWithPassword({ email: clinicEmail, password: cPassword });
-      if (loginError) throw new Error("Fisio creado, pero falló la reconexión de la clínica. Por favor, vuelve a iniciar sesión.");
+      if (loginError) throw new Error("profesional creado, pero falló la reconexión del centro. Por favor, vuelve a iniciar sesión.");
 
       fisios.push(newFisio);
       renderFisios();
@@ -157,13 +157,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('fPassword').value = '';
       document.getElementById('cPassword').value = '';
 
-      showSuccess("Fisioterapeuta añadido. Se le ha enviado un correo para que confirme su cuenta.");
+      showSuccess("Profesional añadido. Se le ha enviado un correo para que confirme su cuenta.");
 
     } catch (err) {
       showError(err.message);
     } finally {
       btnGuardarFisio.disabled = false;
-      btnGuardarFisio.textContent = 'Guardar Fisioterapeuta';
+      btnGuardarFisio.textContent = 'Guardar Profesional';
     }
   });
 

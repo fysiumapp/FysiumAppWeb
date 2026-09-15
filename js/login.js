@@ -43,7 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error(error);
-            showError("Correo o contraseña incorrectos.");
+            if (error.message && error.message.toLowerCase().includes("email not confirmed")) {
+                showError("Debes confirmar tu correo electrónico antes de entrar. Revisa tu bandeja de entrada o Spam.");
+            } else {
+                showError("Correo o contraseña incorrectos.");
+            }
             setLoading(false);
         }
     });

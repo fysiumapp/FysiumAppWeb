@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = "Generando...";
         btn.disabled = true;
         try {
-            // Lógica para clínica o fisio independiente
+            // Lógica para centro o profesional independiente
             let fisioIdParaGuardar = currentUser.id;
             if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
                 const fisioSelect = document.getElementById('sessionFisioSelect'); // El select que ya tienes en el top
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fechaActual.setDate(fechaActual.getDate() + 1);
             }
             if (sesionesAGuardar.length === 0) {
-                alert("No se ha generado ninguna cita. Revisa el rango de fechas.");
+                alert("No se ha generado ninguna sesión. Revisa el rango de fechas.");
                 return;
             }
             // Inserción en lote en Supabase
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error al generar rutina:", error);
             alert("No se pudo generar la rutina.");
         } finally {
-            btn.textContent = "Generar Citas";
+            btn.textContent = "Generar Sesiones";
             btn.disabled = false;
         }
     });
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .delete()
                 .in('dia', fechasAborrar)
                 .eq('estado', 'libre')
-                .eq('fisio_id', fisioIdParaGuardar); // Para no borrar las del compañero si eres clínica
+                .eq('fisio_id', fisioIdParaGuardar); // Para no borrar las del compañero si eres centro
             if (error) throw error;
             alert("Días vaciados correctamente.");
             document.getElementById('limpiarDiasModal').classList.remove('active');
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (fisioSelect && fisioSelect.value) {
                     fisioIdParaGuardar = fisioSelect.value;
                 } else {
-                    alert("Debes seleccionar un fisioterapeuta para asignarle la cita.");
+                    alert("Debes seleccionar un profesional para asignarle la sesión.");
                     if (btn) btn.textContent = "Guardar Sesión";
                     return;
                 }
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         to: u.push_token,
                                         sound: 'default',
                                         title: '🔥 ¡Nuevos horarios disponibles!',
-                                        body: `Tu fisio favorito acaba de publicar sesiones libres el ${fechaBonita} a las ${inicio}. ¡Corre a reservar!`
+                                        body: `Tu profesional favorito acaba de publicar sesiones libres el ${fechaBonita} a las ${inicio}. ¡Corre a reservar!`
                                     })
                                 });
                             }
@@ -338,7 +338,7 @@ window.cargarCalendarioMes = async function () {
         }
     }
 
-    // Borramos los libres pasados (si es clínica, para todos sus fisios)
+    // Borramos los libres pasados (si es centro, para todos sus fisios)
     await supabaseClient.from('horarios_disponibles').delete()
         .in('fisio_id', listaIdsFisios)
         .eq('estado', 'libre')
@@ -377,7 +377,7 @@ window.cargarCalendarioMes = async function () {
         }
         monthAppointments = data;
     } else {
-        console.error("Error cargando citas (Míralo aquí en la consola):", error);
+        console.error("Error cargando sesiones", error);
         monthAppointments = [];
     }
 
@@ -455,11 +455,11 @@ function renderizarDiaSeleccionado() {
         item.className = `session-item ${s.estado === 'reservado' ? 'reserved' : ''}`;
 
         // El nombre ya viene inyectado con el arreglo de arriba
-        const patientName = s.nombre_paciente || 'Paciente';
+        const patientName = s.nombre_paciente || 'Cliente';
 
         let fisioBadge = '';
         if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
-            fisioBadge = `<div style="font-size:0.75rem; color:var(--primary); font-weight:600;"><i class="fa-solid fa-user-doctor"></i> ${s.nombre_fisio}</div>`;
+            fisioBadge = `<div style="font-size:0.75rem; color:var(--primary); font-weight:600;"><i class="fa-solid fa-user"></i> ${s.nombre_fisio}</div>`;
         }
 
         let content = `
@@ -520,7 +520,7 @@ window.openBookModal = function (id) {
 }
 
 window.deleteSession = async function (id) {
-    if (!confirm("¿Seguro que quieres eliminar esta cita?")) return;
+    if (!confirm("¿Seguro que quieres eliminar esta sesión?")) return;
 
     const { error } = await supabaseClient
         .from('horarios_disponibles')
@@ -684,12 +684,12 @@ window.cargarPacientesParaModal = async function () {
         .from('mis_pacientes')
         .select('cliente_id, auth_user(username, foto_perfil_url)')
         .in('fisio_id', listaIdsFisios)
-        .eq('activo', true); // <-- AQUÍ ESTÁ LA LÍNEA MÁGICA
+        .eq('activo', true);
 
     if (!misPacs) return;
 
     lista.innerHTML = misPacs.map(p => {
-        const nombre = p.auth_user.username || 'Paciente';
+        const nombre = p.auth_user.username || 'Cliente';
         const inicial = nombre.charAt(0).toUpperCase();
         const foto = p.auth_user.foto_perfil_url;
 
@@ -750,14 +750,14 @@ window.reservarPacienteExistente = async function (clienteId, nombre) {
                         body: JSON.stringify({
                             to: userPref.push_token,
                             sound: 'default',
-                            title: '📅 Nueva Cita Programada',
-                            body: `Tu fisioterapeuta te ha reservado una sesión el ${fechaBonita} a las ${citaInfo.hora}.`
+                            title: '📅 Nueva Sesión Programada',
+                            body: `Tu profesional te ha reservado una sesión el ${fechaBonita} a las ${citaInfo.hora}.`
                         })
                     });
                 }
             }
         } catch (err) {
-            console.error("Error enviando alerta de cita al paciente:", err);
+            console.error("Error enviando alerta de sesión al cliente:", err);
         }
 
         modal.classList.remove('active');
@@ -839,7 +839,7 @@ window.finalizarReserva = async function () {
 
     } catch (error) {
         console.error(error);
-        alert("Error al reservar y crear paciente: " + error.message);
+        alert("Error al reservar y crear cliente: " + error.message);
     }
 };
 

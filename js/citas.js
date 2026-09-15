@@ -8,7 +8,7 @@ window.cargarTodasLasCitas = async function () {
   try {
     let listaIdsFisios = [currentUser.id];
     let mapFisios = {};
-    // 1. Si es clínica, buscar todos sus fisios
+    // 1. Si es centro, buscar todos sus fisios
     if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
       const { data: fisiosData } = await supabaseClient
         .from('fisios')
@@ -47,7 +47,7 @@ window.cargarTodasLasCitas = async function () {
     }
     // 4. Preparar datos finales
     window.todasLasCitasCargadas = citas.map(cita => {
-      const nombrePaciente = cita.nombre_paciente || mapPacientes[cita.cliente_id] || 'Paciente Desconocido';
+      const nombrePaciente = cita.nombre_paciente || mapPacientes[cita.cliente_id] || 'Cliente Desconocido';
       const nombreFisio = mapFisios[cita.fisio_id] || 'Mi Agenda';
 
       return {
@@ -58,7 +58,7 @@ window.cargarTodasLasCitas = async function () {
     });
     window.renderizarListaCitas(window.todasLasCitasCargadas);
   } catch (err) {
-    console.error("Error cargando todas las citas:", err);
+    console.error("Error cargando todas las sesiones:", err);
     lista.innerHTML = '<p class="text-danger text-center">Error al cargar las citas.</p>';
   }
 };
@@ -72,10 +72,10 @@ window.renderizarListaCitas = function (citasArray) {
   const html = citasArray.map(cita => {
     const fechaInvertida = cita.dia.split('-').reverse().join('/');
 
-    // Etiqueta del fisio (solo útil si es clínica y tiene fisios)
+    // Etiqueta del fisio (solo útil si es centro y tiene fisios)
     let fisioBadge = '';
     if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
-      fisioBadge = `<div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;"><i class="fa-solid fa-user-doctor"></i> Fisio Asociado: ${cita.nombreFisioFinal}</div>`;
+      fisioBadge = `<div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;"><i class="fa-solid fa-user"></i> Profesional Asignado: ${cita.nombreFisioFinal}</div>`;
     }
     return `
             <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin-bottom: 0; border-left: 4px solid var(--primary);">

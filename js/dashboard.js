@@ -38,10 +38,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (error || !data) { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; return; }
         userData = data;
 
-        // UI ADAPTATIVO PARA CLÍNICA
+        // UI ADAPTATIVO PARA CENTRO
         document.getElementById('navFisios').style.display = 'block';
         const navPerfilText = document.getElementById('navPerfilText');
-        if (navPerfilText) navPerfilText.textContent = "Perfil de la Clínica";
+        if (navPerfilText) navPerfilText.textContent = "Perfil del Centro";
     } else {
         const { data, error } = await supabaseClient.from('fisios').select('*').eq('user_id', currentUser.id).single();
         if (error || !data) { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; return; }
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (fisioFresco) userData.plan_suscripcion = fisioFresco.plan_suscripcion;
         }
 
-        // 2. HERENCIA DE LA CLÍNICA (Si eres Fisio empleado)
+        // 2. HERENCIA DE LA CENTRO (Si eres Fisio empleado)
         if (rol === 'fisio' && userData.clinica_id) {
             const { data: clinicaAsociada } = await supabaseClient
                 .from('clinicas')
@@ -261,7 +261,7 @@ async function cargarPerfil(userId, userDataBase, authEmail, rol) {
         .eq('id_supabase', userId)
         .single();
 
-    const nombre = userData && userData.username ? userData.username : (userDataBase.nombre || 'Fisioterapeuta');
+    const nombre = userData && userData.username ? userData.username : (userDataBase.nombre || 'Profesional');
     const email = userData && userData.email ? userData.email : authEmail;
     const foto = (userData && userData.foto_perfil_url) ? userData.foto_perfil_url : (userDataBase.foto_perfil_url || userDataBase.foto_url || null);
 
@@ -400,16 +400,16 @@ function configurarPagosStripe(userId, email) {
     }
 
     // ESTADO VISUAL: FREE O EXPIRED
-    // CASO A: SI ES FISIO DE UNA CLÍNICA LA CLÍNICA PAGA POR ÉL
+    // CASO A: SI ES FISIO DE UNA CENTRO LA CENTRO PAGA POR ÉL
     if (rol === 'fisio' && clinicaId) {
-        statusText.innerText = "Suscripción gestionada por tu Clínica";
+        statusText.innerText = "Suscripción gestionada por tu Centro";
         statusText.style.color = "#64748b";
         checkoutBtn.style.display = 'none'; // QUITAR BOTÓN PAGO AL EMPLEADO
         secureText.style.display = 'none';
         return;
     }
 
-    // CASO B: SI ES CLÍNICA O FISIO LIBRE TIENE QUE PAGAR
+    // CASO B: SI ES CENTRO O FISIO LIBRE TIENE QUE PAGAR
     const config = (rol === 'clinica') ? STRIPE_CONFIG.CLINICA : STRIPE_CONFIG.FISIO_AUTONOMO;
     if (plan === 'free') {
         const diasRestantes = window.diasRestantesPrueba || 0;
@@ -472,7 +472,7 @@ function configurarPagosStripe(userId, email) {
             try {
                 let cantidadFisios = 1;
 
-                // SI ES CLÍNICA CONTAR CUANTOS FISIOS TIENE
+                // SI ES CENTRO CONTAR CUANTOS FISIOS TIENE
                 if (rol === 'clinica') {
                     const { count } = await supabaseClient
                         .from('fisios')
@@ -528,21 +528,21 @@ function renderizarPerfilInfo() {
     if (data.rol === 'clinica') {
         if (divColegiado) divColegiado.style.display = 'none';
 
-        // OCULTAR ESPECIALIDADES DE LA CLÍNICA
+        // OCULTAR ESPECIALIDADES DE LA CENTRO
         if (divEspecialidades) divEspecialidades.style.display = 'none';
 
-        // CAMBIAR TÍTULO SEGÚN SEA CLÍNICA O FISIO
+        // CAMBIAR TÍTULO SEGÚN SEA CENTRO O FISIO
         const headings = document.querySelectorAll('h4');
         headings.forEach(h4 => {
-            if (h4.textContent.includes('Panel de Fisioterapeuta')) {
-                h4.textContent = 'Información de la Clínica';
+            if (h4.textContent.includes('Panel de Profesionales')) {
+                h4.textContent = 'Información del Centro';
             }
         });
-        document.getElementById('profileTitleRole').textContent = "Clínica";
+        document.getElementById('profileTitleRole').textContent = "Centro";
     } else {
         if (divColegiado) divColegiado.style.display = 'block';
         if (divEspecialidades) divEspecialidades.style.display = 'block';
-        document.getElementById('profileTitleRole').textContent = "Fisioterapeuta";
+        document.getElementById('profileTitleRole').textContent = "Profesional";
     }
 
     // AVATARES
@@ -583,7 +583,7 @@ function renderSpecialties() {
 }
 
 // -------------------------------------------------------------
-// LÓGICA DE CLÍNICAS (Fisios Asociados)
+// LÓGICA DE CENTRO (Fisios Asociados)
 // -------------------------------------------------------------
 window.cargarFisiosAsociados = async function () {
     if (!currentUser || window.currentProfileData.rol !== 'clinica') return;
@@ -591,7 +591,7 @@ window.cargarFisiosAsociados = async function () {
     const lista = document.getElementById('listaFisiosClinica');
     if (!lista) return;
 
-    lista.innerHTML = '<div class="loading-spinner">Cargando fisios...</div>';
+    lista.innerHTML = '<div class="loading-spinner">Cargando profesionales...</div>';
 
     const { data: fisios, error } = await supabaseClient
         .from('fisios')
@@ -599,7 +599,7 @@ window.cargarFisiosAsociados = async function () {
         .eq('clinica_id', window.currentProfileData.clinicaDataId);
 
     if (error) {
-        lista.innerHTML = '<p class="text-danger">Error al cargar fisios asociados.</p>';
+        lista.innerHTML = '<p class="text-danger">Error al cargar profesionales asociados.</p>';
         return;
     }
 
@@ -611,7 +611,7 @@ window.cargarFisiosAsociados = async function () {
     }
 
     if (!fisios || fisios.length === 0) {
-        lista.innerHTML = '<p class="text-light">Aún no tienes fisioterapeutas asociados. Haz clic en "Añadir Fisio" para empezar.</p>';
+        lista.innerHTML = '<p class="text-light">Aún no tienes profesionales asociados. Haz clic en "Añadir Profesional" para empezar.</p>';
         return;
     }
 
@@ -655,7 +655,7 @@ window.abrirDetalleFisio = async function (fisioId) {
         const telefonoFisio = authData?.telefono || 'Sin teléfono';
 
         // MOSTRAR EN UI
-        document.getElementById('dfName').innerText = fisio.nombre || 'Fisioterapeuta';
+        document.getElementById('dfName').innerText = fisio.nombre || 'Profesional';
         document.getElementById('dfEmail').innerText = fisio.email || 'correo@ejemplo.com';
         document.getElementById('dfPhone').innerHTML = '<i class="fa-solid fa-phone"></i> <span>' + telefonoFisio + '</span>';
 
@@ -706,11 +706,11 @@ window.abrirDetalleFisio = async function (fisioId) {
         modal.classList.add('active');
     } catch (err) {
         console.error(err);
-        alert("No se pudieron cargar los datos del fisio.");
+        alert("No se pudieron cargar los datos del profesional.");
     }
 };
 window.eliminarFisioAsociado = async function (fisioId) {
-    if (!confirm('¿Estás seguro de que quieres eliminar a este fisioterapeuta? Se borrarán permanentemente sus citas y pacientes asociados a la clínica.')) return;
+    if (!confirm('¿Estás seguro de que quieres eliminar a este profesional? Se borrarán permanentemente sus sesiones y clientes asociados al centro.')) return;
 
     try {
         // 1. BORRAR CITAS
@@ -726,11 +726,11 @@ window.eliminarFisioAsociado = async function (fisioId) {
 
         if (error) throw error;
 
-        alert('El fisioterapeuta y sus datos han sido eliminados.');
+        alert('El profesional y sus datos han sido eliminados.');
         window.cargarFisiosAsociados();
     } catch (err) {
         console.error(err);
-        alert('Error al intentar eliminar al fisioterapeuta.');
+        alert('Error al intentar eliminar al profesional.');
     }
 };
 
@@ -761,7 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
             submitAddFisioBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando...';
 
             try {
-                // 1. Verificar credenciales del Admin (Clínica)
+                // 1. Verificar credenciales del Admin (centro)
                 const adminEmail = currentUser.email;
                 const { error: signInError } = await supabaseClient.auth.signInWithPassword({
                     email: adminEmail,
@@ -769,7 +769,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (signInError) {
-                    throw new Error("La contraseña de la clínica es incorrecta.");
+                    throw new Error("La contraseña del centro es incorrecta.");
                 }
 
                 // 2. Crear al nuevo usuario
@@ -817,13 +817,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (authUserError) throw authUserError;
 
-                // 6. Restaurar la sesión de la clínica
+                // 6. Restaurar la sesión de la centro
                 await supabaseClient.auth.signInWithPassword({
                     email: adminEmail,
                     password: adminPwd
                 });
 
-                alert("¡Fisioterapeuta registrado y vinculado correctamente!");
+                alert("¡Profesional registrado y vinculado correctamente!");
                 document.getElementById('modalAddFisio').classList.remove('active');
 
                 // Limpiar campos
@@ -840,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Error: " + err.message);
             } finally {
                 submitAddFisioBtn.disabled = false;
-                submitAddFisioBtn.innerHTML = 'Registrar Fisio';
+                submitAddFisioBtn.innerHTML = 'Registrar Profesional';
             }
         });
     }
@@ -867,19 +867,19 @@ function mostrarModalWeb(hito, diasRestantes) {
             break;
         case 30:
             title.innerText = 'Periodo de prueba activo';
-            body.innerText = `Llevas un mes usando Fysium. Te quedan ${diasRestantes} días de prueba gratuita. Recuerda que puedes suscribirte a un plan profesional en cualquier momento desde tu perfil.`;
+            body.innerText = `Llevas un mes usando Fysium. Te quedan ${diasRestantes} días de prueba gratuita para gestionar tus sesiones y clientes con total comodidad.`;
             iconBg.style.backgroundColor = 'var(--primary)';
             icon.className = 'fa-solid fa-clock';
             break;
         case 60:
             title.innerText = `Tu prueba expira en ${diasRestantes} días`;
-            body.innerText = 'Ya has completado más de la mitad de tu periodo de pruebas. Te recomendamos elegir tu plan de suscripción definitivo antes de que finalice el plazo para no interrumpir el servicio de reservas de tus pacientes.';
+            body.innerText = 'Ya has completado más de la mitad de tu periodo de pruebas. Te avisaremos cuando falten 3 días para que puedas activar tu plan sin interrupciones.';
             iconBg.style.backgroundColor = '#D97706'; // Naranja
             icon.className = 'fa-solid fa-bell';
             break;
         case 90:
             title.innerText = `⚠️ Acción requerida: Termina en ${diasRestantes} días`;
-            body.innerText = 'Tu acceso gratuito está a punto de caducar. Configura tu método de pago y activa tu licencia profesional en la pestaña "Mi Perfil" ahora mismo para garantizar un servicio ininterrumpido a tus pacientes.';
+            body.innerText = 'Tu acceso gratuito está a punto de caducar. Configura tu método de pago y activa tu licencia profesional en la pestaña "Mi Perfil" ahora mismo para garantizar un servicio ininterrumpido a tus clientes.';
             iconBg.style.backgroundColor = 'var(--danger)';
             icon.className = 'fa-solid fa-triangle-exclamation';
             break;

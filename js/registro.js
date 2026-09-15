@@ -33,7 +33,7 @@ function setRole(role) {
   } else {
     btnClinica.classList.add('active');
     btnFisio.classList.remove('active');
-    labelNombre.textContent = "Nombre de la Clínica";
+    labelNombre.textContent = "Nombre del Centro";
     labelTel1.textContent = "Teléfono Fijo (Opcional)";
     inputTel1.required = false;
     groupTel2.classList.remove('hidden');
@@ -87,7 +87,7 @@ function renderFisiosList() {
     div.className = 'fisio-list-item';
     div.innerHTML = `
             <div>
-                <strong>Fisio ${index + 1}: ${f.nombre}</strong><br>
+                <strong>Profesional ${index + 1}: ${f.nombre}</strong><br>
                 <small style="color:#7f8c8d;">${f.email}</small>
             </div>
             <button type="button" onclick="removeFisio(${index})" style="background:none; border:none; color:red; cursor:pointer; font-size:18px;">&times;</button>
@@ -168,7 +168,9 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
         }
       });
       if (errC) throw new Error(errC.message);
-      if (!authC.user) throw new Error("No se pudo crear la clínica");
+      if (!authC.user) throw new Error("No se pudo crear el centro");
+
+      if (authC.user?.identities?.length === 0) throw new Error("Este correo ya está registrado en Fysium. Inicia sesión o recupera tu contraseña.");
 
       // 2. Asignar rol
       await supabaseClient.from('gestion_perfil').update({ rol: 'clinica' }).eq('user_id', authC.user.id);
@@ -182,7 +184,7 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
         plan_suscripcion: 'free'
       }).select().single();
 
-      if (errClinica) throw new Error(`Error en datos de clínica: ${errClinica.message}`);
+      if (errClinica) throw new Error(`Error en datos del centro: ${errClinica.message}`);
 
       // // 4. Autenticar y redirigir al Onboarding
       // await supabaseClient.auth.signInWithPassword({ email: email, password: password });
@@ -204,9 +206,11 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
       if (authError) throw new Error(authError.message);
       if (!authData.user) throw new Error("No se pudo crear el usuario.");
 
+      if (authData.user?.identities?.length === 0) throw new Error("Este correo ya está registrado en Fysium. Inicia sesión o recupera tu contraseña.");
+
       await supabaseClient.from('gestion_perfil').update({ rol: 'fisio' }).eq('user_id', authData.user.id);
 
-      const { error: fisioError } = await supabaseClient.from('fisios').upsert({
+      const { error: fisioError } = await supabaseClient.from('fisios').insert({
         user_id: authData.user.id,
         nombre: nombre,
         email: email,
