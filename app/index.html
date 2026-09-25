@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no, viewport-fit=cover" />
   <title>FysiumApp</title>
 
   <!-- Manifiesto e Iconos PWA para iPhone y Android -->
@@ -16,6 +16,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="FysiumApp" />
   <meta name="theme-color" content="#2D5D5D" />
+
+  <!-- Intento de bloqueo vertical en Android / PWA -->
+  <script>
+    if (screen && screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('portrait').catch(function () { });
+    }
+  </script>
 
   <style id="expo-reset">
     html,
@@ -42,6 +49,26 @@
       #root {
         max-width: 100%;
         box-shadow: none;
+      }
+    }
+
+    /* Solo en teléfonos móviles cuando se giran en horizontal */
+    @media screen and (orientation: landscape) and (max-height: 500px) {
+      body::before {
+        content: "📱 Por favor, usa FysiumApp con el móvil en vertical";
+        position: fixed;
+        inset: 0;
+        background: #2D5D5D;
+        color: white;
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-align: center;
+        padding: 20px;
       }
     }
   </style>
