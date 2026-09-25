@@ -60,20 +60,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 .select('rol')
                 .eq('user_id', userId)
                 .single();
-
             if (error || !data) {
                 showError("No se pudo verificar el perfil del usuario.");
                 setLoading(false);
                 return;
             }
-
-            // 1. SI ES CLIENTE -> A LA WEBAPP
+            // Detectar si el usuario está navegando desde un teléfono móvil (iPhone o Android)
+            const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            // 1. SI ES CLIENTE -> SIEMPRE A LA WEBAPP
             if (data.rol === 'cliente') {
                 window.location.href = 'app/';
                 return;
             }
-
-            // 2. SI ES CLÍNICA -> COMPROBAR SI FALTA CONFIGURACIÓN
+            // 2. SI ES PROFESIONAL EN UN TELÉFONO MÓVIL -> A LA WEBAPP MÓVIL (adaptada para móviles)
+            if (esMovil) {
+                window.location.href = 'app/';
+                return;
+            }
+            // 3. SI ES CLÍNICA EN PC -> COMPROBAR SI FALTA CONFIGURACIÓN
             if (data.rol === 'clinica') {
                 const { data: clinica } = await supabaseClient.from('clinicas').select('id').eq('user_id', userId).single();
                 if (clinica) {
@@ -84,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
-            // 3. SI ES FISIO O CLÍNICA CONFIGURADA -> AL DASHBOARD DE PC
+            // 4. SI ES PROFESIONAL EN UN ORDENADOR PC -> AL DASHBOARD DE PC
             window.location.href = 'dashboard.html';
         } catch (err) {
             console.error(err);
@@ -92,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setLoading(false);
         }
     }
+
 
     function setLoading(isLoading) {
         if (isLoading) {
