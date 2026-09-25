@@ -30,8 +30,8 @@
             <img src="assets/FysiumApp_logo.png" alt="Fysium Logo">
         </div>
         <nav style="display: flex; align-items: center; gap: 1.5rem;">
-            <a href="#como-funciona" style="font-weight: 500;">Cómo Funciona</a>
-            <a href="#profesionales" style="font-weight: 500;">Para Profesionales y Centros</a>
+            <!-- <a href="#clientes" style="font-weight: 500;">Clientes</a>
+            <a href="#profesionales" style="font-weight: 500;">Profesionales</a> -->
             <a href="login.html" class="login-btn">Entrar</a>
         </nav>
     </header>
@@ -50,18 +50,25 @@
                 <p>La plataforma integral que digitaliza tu agenda, te da visibilidad ante nuevos clientes y automatiza tus reservas al instante. Tu crecimiento profesional comienza aquí.</p>
 
                 <div class="store-buttons">
-                    <a href="#" class="store-btn">
+                    <a href="https://play.google.com/store/apps/details?id=com.fysium.app" class="store-btn" target="_blank" rel="noopener">
+                        <i class="fa-brands fa-google-play"></i>
+                        <div>
+                            <span>Disponible en</span>
+                            Google Play
+                        </div>
+                    </a>
+                    <a href="#" class="store-btn" style="opacity: 0.7; cursor: default;" title="Próximamente disponible">
                         <i class="fa-brands fa-apple"></i>
                         <div>
                             <span>Próximamente en</span>
                             App Store
                         </div>
                     </a>
-                    <a href="https://play.google.com/store/apps/details?id=com.fysium.app" class="store-btn secondary">
-                        <i class="fa-brands fa-google-play"></i>
+                    <a href="app/" class="store-btn" onclick="mostrarGuiaIos(event)">
+                        <i class="fa-solid fa-globe"></i>
                         <div>
-                            <span>Disponible en</span>
-                            Google Play
+                            <span>Acceso Navegador</span>
+                            Abrir WebApp
                         </div>
                     </a>
                 </div>
@@ -97,21 +104,28 @@
             </div>
         </section>
 
-        <section class="patient-banner">
+        <section id="clientes" class="patient-banner">
             <div class="banner-icon">
                 <i class="fa-solid fa-mobile-screen-button"></i>
             </div>
             <h3>¿Buscas un profesional o reservar una sesión?</h3>
-            <p>Descarga FysiumApp, encuentra a los mejores profesionales en el mapa, revisa sus valoraciones y reserva tu sesión en segundos, sin llamadas ni esperas.</p>
-
+            <p>Reserva en segundos con los mejores profesionales desde cualquier dispositivo o descárgate la app.</p>
+            <!-- LAS 3 OPCIONES: ANDROID, APPLE, WEBAPP -->
             <div class="download-buttons">
-                <a href="#" class="btn-store">
+                <!-- 1. ANDROID -->
+                <a href="https://play.google.com/store/apps/details?id=com.fysium.app" class="btn-store" target="_blank" rel="noopener">
                     <i class="fa-brands fa-google-play"></i>
                     <span>Disponible en<br><strong>Google Play</strong></span>
                 </a>
-                <a href="#" class="btn-store disabled">
+                <!-- 2. APPLE (PRÓXIMAMENTE) -->
+                <div class="btn-store disabled" title="Próximamente disponible en App Store">
                     <i class="fa-brands fa-apple"></i>
                     <span>Próximamente en<br><strong>App Store</strong></span>
+                </div>
+                <!-- 3. WEBAPP (CLIENTES - iOS / NAVEGADOR) -->
+                <a href="app/" class="btn-store btn-webapp" onclick="mostrarGuiaIos(event)">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Acceso directo iOS y Web<br><strong>Abrir WebApp</strong></span>
                 </a>
             </div>
         </section>
@@ -119,21 +133,32 @@
         <section id="profesionales" class="physio-promo">
             <div class="promo-content">
                 <div class="promo-badge">
-                    <i class="fa-solid fa-gift"></i> 90 DÍAS GRATIS
+                    <i class="fa-solid fa-gift"></i> 60 DÍAS GRATIS
                 </div>
                 <h2>La herramienta definitiva para tu centro</h2>
-                <p>Digitaliza tu agenda, optimiza tus reservas y llega a más clientes de forma automática. Descubre todo el potencial de FysiumApp sin límites y sin compromiso.</p>
+                <p>Digitaliza tu agenda, optimiza tus reservas y atiende a tus clientes desde cualquier dispositivo móvil o tu ordenador.</p>
                 <ul class="promo-features">
                     <li><i class="fa-solid fa-check"></i> Sin tarjeta de crédito</li>
-                    <li><i class="fa-solid fa-check"></i> Soporte incluido</li>
+                    <li><i class="fa-solid fa-check"></i> Acceso web completo y app móvil</li>
                     <li><i class="fa-solid fa-check"></i> Cancela cuando quieras</li>
                 </ul>
+                <!-- LAS 3 OPCIONES PARA PROFESIONALES -->
+                <div class="download-buttons" style="justify-content: flex-start; margin-bottom: 1.5rem;">
+                    <!-- 1. ANDROID -->
+                    <a href="https://play.google.com/store/apps/details?id=com.fysium.app" class="btn-store" target="_blank" rel="noopener">
+                        <i class="fa-brands fa-google-play"></i>
+                        <span>Disponible en<br><strong>Google Play</strong></span>
+                    </a>
+                    <!-- 2. APPLE (PRÓXIMAMENTE) -->
+                    <div class="btn-store disabled" title="Próximamente disponible en App Store">
+                        <i class="fa-brands fa-apple"></i>
+                        <span>Próximamente en<br><strong>App Store</strong></span>
+                    </div>
+                </div>
                 <a href="registro.html" class="cta-button-main">Crear cuenta gratis</a>
             </div>
-
             <div class="promo-image">
                 <img src="assets/banner_web_2.png" alt="Panel de gestión de FysiumApp">
-                <div class="image-backdrop"></div>
             </div>
         </section>
     </main>
@@ -168,6 +193,37 @@
             &copy; 2026 Fysium. Todos los derechos reservados.
         </div>
     </footer>
+
+    <!-- MODAL GUÍA PARA iPHONE -->
+    <div id="iosModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+        <div style="background: white; border-radius: 20px; max-width: 380px; width: 100%; padding: 25px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <img src="assets/FysiumApp_logo.png" alt="Fysium" style="width: 70px; height: 70px; margin-bottom: 15px;">
+            <h3 style="color: #0195a3; font-size: 1.3rem; margin-bottom: 8px;">Instalar en tu iPhone</h3>
+            <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">Úsala como una app real sin pasar por la App Store:</p>
+
+            <div style="text-align: left; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 0.9rem; color: #334155;">
+                <p style="margin-bottom: 10px;"><strong>1.</strong> Pulsa el botón <strong>Compartir</strong> en la barra de Safari (el icono <i class="fa-solid fa-arrow-up-from-bracket" style="color: #0195a3;"></i> abajo).</p>
+                <p style="margin: 0;"><strong>2.</strong> Elige <strong>"Añadir a pantalla de inicio"</strong> (<i class="fa-regular fa-square-plus" style="color: #0195a3;"></i>).</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="document.getElementById('iosModal').style.display='none'" style="flex: 1; padding: 12px; border: 1px solid #cbd5e1; background: white; border-radius: 10px; font-weight: 600; cursor: pointer;">Cerrar</button>
+                <a href="app/" style="flex: 1; padding: 12px; background: #0195a3; color: white; border-radius: 10px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center;">Ir a la WebApp</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function mostrarGuiaIos(e) {
+            // Detectar si el usuario está navegando desde un iPhone o iPad
+            const esIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+            if (esIos) {
+                if (e) e.preventDefault();
+                document.getElementById('iosModal').style.display = 'flex';
+            }
+            // Si no es iOS (ej. PC o Android), navega normalmente a app/
+        }
+    </script>
 
 </body>
 

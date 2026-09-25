@@ -1,0 +1,19 @@
+{
+  "short_name": "FysiumApp",
+  "name": "FysiumApp",
+  "description": "Tu plataforma de fisioterapia y bienestar",
+  "icons": [
+    {
+      "src": "/app/icon.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0195a3",
+  "background_color": "#ffffff"
+}

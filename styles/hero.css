@@ -143,3 +143,72 @@
     justify-content: center;
   }
 }
+
+/* --- Botón destacado para la WebApp --- */
+.btn-store.btn-webapp {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  border: 1px solid #14b8a6;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
+}
+
+.btn-store.btn-webapp:hover {
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.45);
+}
+
+/* --- Estado deshabilitado / Próximamente para Apple --- */
+.btn-store.disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.btn-store.disabled strong {
+  color: #475569;
+}
+
+.btn-store.disabled:hover {
+  transform: none;
+  background: #cbd5e1;
+}
+
+/* --- Tip visual para usuarios de iOS en Safari --- */
+.ios-tip {
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(13, 148, 136, 0.08);
+  border: 1px solid rgba(13, 148, 136, 0.2);
+  color: #334155;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  text-align: left;
+  max-width: 600px;
+}
+
+.ios-tip i {
+  font-size: 1.2rem;
+  color: #0d9488;
+}
+
+/* Responsividad para los 3 botones */
+@media (max-width: 768px) {
+  .download-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-store {
+    justify-content: center;
+  }
+
+  .ios-tip {
+    text-align: center;
+    flex-direction: column;
+  }
+}

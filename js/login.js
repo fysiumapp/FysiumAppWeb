@@ -61,14 +61,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 .eq('user_id', userId)
                 .single();
 
-            if (error || !data || (data.rol !== 'fisio' && data.rol !== 'clinica')) {
-                // Si no es fisio ni clinica, rechazamos.
-                await supabaseClient.auth.signOut({ scope: 'local' });
-                showError("Acceso denegado. Esta sección es exclusiva para profesionales.");
+            if (error || !data) {
+                showError("No se pudo verificar el perfil del usuario.");
                 setLoading(false);
                 return;
             }
 
+            // 1. SI ES CLIENTE -> A LA WEBAPP
+            if (data.rol === 'cliente') {
+                window.location.href = 'app/';
+                return;
+            }
+
+            // 2. SI ES CLÍNICA -> COMPROBAR SI FALTA CONFIGURACIÓN
             if (data.rol === 'clinica') {
                 const { data: clinica } = await supabaseClient.from('clinicas').select('id').eq('user_id', userId).single();
                 if (clinica) {
@@ -79,14 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
-
-            // Es fisio o clínica (con todo en regla), redirigir al dashboard
+            // 3. SI ES FISIO O CLÍNICA CONFIGURADA -> AL DASHBOARD DE PC
             window.location.href = 'dashboard.html';
-
-        } catch (error) {
-            console.error("Error validando rol:", error);
-            await supabaseClient.auth.signOut({ scope: 'local' });
-            showError("Error al verificar permisos.");
+        } catch (err) {
+            console.error(err);
+            showError("Error al iniciar sesión.");
             setLoading(false);
         }
     }

@@ -2,9 +2,9 @@ let currentUser = null;
 
 // const DIAS_DE_PRUEBA = 15;
 
-const DIAS_DE_PRUEBA = 90;
+const DIAS_DE_PRUEBA = 60;
 
-const HITOS_AVISO = [0, 30, 60, 80];
+const HITOS_AVISO = [0, 30, 50, 57];
 
 document.addEventListener('DOMContentLoaded', async () => {
     // PROTEGER RUTA
@@ -184,7 +184,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // MODALES PROMOCIONALES
-            const HITOS_AVISO = [0, 30, 60, 90];
             let hitoActual = -1;
             for (const hito of HITOS_AVISO) {
                 if (unidadesTranscurridas >= hito) hitoActual = hito;
@@ -860,7 +859,7 @@ function mostrarModalWeb(hito, diasRestantes) {
 
     switch (hito) {
         case 0:
-            title.innerText = 'Prueba de 90 días activada';
+            title.innerText = 'Prueba de 60 días activada';
             body.innerText = 'Bienvenido al panel web. Hemos activado tu licencia con acceso a todas las funciones. No necesitas tarjeta de crédito. Cuando termine el plazo, podrás elegir uno de nuestros planes desde la pestaña "Mi Perfil".';
             iconBg.style.backgroundColor = 'var(--primary)';
             icon.className = 'fa-solid fa-rocket';
@@ -871,13 +870,13 @@ function mostrarModalWeb(hito, diasRestantes) {
             iconBg.style.backgroundColor = 'var(--primary)';
             icon.className = 'fa-solid fa-clock';
             break;
-        case 60:
+        case 50:
             title.innerText = `Tu prueba expira en ${diasRestantes} días`;
             body.innerText = 'Ya has completado más de la mitad de tu periodo de pruebas. Te avisaremos cuando falten 3 días para que puedas activar tu plan sin interrupciones.';
             iconBg.style.backgroundColor = '#D97706'; // Naranja
             icon.className = 'fa-solid fa-bell';
             break;
-        case 90:
+        case 57:
             title.innerText = `⚠️ Acción requerida: Termina en ${diasRestantes} días`;
             body.innerText = 'Tu acceso gratuito está a punto de caducar. Configura tu método de pago y activa tu licencia profesional en la pestaña "Mi Perfil" ahora mismo para garantizar un servicio ininterrumpido a tus clientes.';
             iconBg.style.backgroundColor = 'var(--danger)';
