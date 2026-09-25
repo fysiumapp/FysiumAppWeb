@@ -65,8 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 setLoading(false);
                 return;
             }
-            // Detectar si el usuario está navegando desde un teléfono móvil (iPhone o Android)
-            const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            // Detectar si el usuario está navegando desde un teléfono móvil (iPhone, Android, o modo escritorio en móvil)
+            const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) 
+                || (navigator.maxTouchPoints > 1 && window.screen.width < 1024)
+                || window.innerWidth < 768;
             // 1. SI ES CLIENTE -> SIEMPRE A LA WEBAPP
             if (data.rol === 'cliente') {
                 window.location.href = 'app/';

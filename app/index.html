@@ -17,7 +17,7 @@
   <meta name="apple-mobile-web-app-title" content="FysiumApp" />
   <meta name="theme-color" content="#2D5D5D" />
 
-  <!-- Intento de bloqueo vertical en Android / PWA -->
+  <!-- Bloqueo vertical en navegadores compatibles -->
   <script>
     if (screen && screen.orientation && screen.orientation.lock) {
       screen.orientation.lock('portrait').catch(function () { });
@@ -52,7 +52,7 @@
       }
     }
 
-    /* Solo en teléfonos móviles cuando se giran en horizontal */
+    /* Aviso en teléfonos móviles cuando se giran en horizontal */
     @media screen and (orientation: landscape) and (max-height: 500px) {
       body::before {
         content: "📱 Por favor, usa FysiumApp con el móvil en vertical";
@@ -79,7 +79,7 @@
     Necesitas habilitar JavaScript para ejecutar esta aplicación.
   </noscript>
   <div id="root"></div>
-  <script src="/app/_expo/static/js/web/entry-669a3724f1d3e80642a61b4c21e9272c.js" defer></script>
+  <script src="/app/_expo/static/js/web/entry-51e9d00fa0ff543e5b4566a4b4edcb79.js" defer></script>
 </body>
 
 </html>
