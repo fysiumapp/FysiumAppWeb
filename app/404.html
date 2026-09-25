@@ -1,85 +1,37 @@
 <!DOCTYPE html>
-<html lang="es">
-
-<head>
-  <meta charset="utf-8" />
-  <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no, viewport-fit=cover" />
-  <title>FysiumApp</title>
-
-  <!-- Manifiesto e Iconos PWA para iPhone y Android -->
-  <link rel="manifest" href="/app/manifest.json" />
-  <link rel="icon" href="/app/favicon.ico" />
-  <link rel="apple-touch-icon" href="/app/icon.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/app/icon.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="FysiumApp" />
-  <meta name="theme-color" content="#2D5D5D" />
-
-  <!-- Bloqueo vertical en navegadores compatibles -->
-  <script>
-    if (screen && screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('portrait').catch(function () { });
-    }
-  </script>
-
-  <style id="expo-reset">
-    html,
-    body {
-      height: 100%;
-      background-color: #f1f5f9;
-    }
-
-    body {
-      overflow: hidden;
-    }
-
-    #root {
-      display: flex;
-      height: 100%;
-      flex: 1;
-      max-width: 800px;
-      margin: 0 auto;
-      box-shadow: 0 0 35px rgba(0, 0, 0, 0.08);
-      background-color: #ffffff;
-    }
-
-    @media (max-width: 800px) {
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>FysiumApp</title>
+    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      /* These styles make the body full-height */
+      html,
+      body {
+        height: 100%;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+      }
+      /* These styles make the root element full-height */
       #root {
-        max-width: 100%;
-        box-shadow: none;
-      }
-    }
-
-    /* Aviso en teléfonos móviles cuando se giran en horizontal */
-    @media screen and (orientation: landscape) and (max-height: 500px) {
-      body::before {
-        content: "📱 Por favor, usa FysiumApp con el móvil en vertical";
-        position: fixed;
-        inset: 0;
-        background: #2D5D5D;
-        color: white;
-        z-index: 999999;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        font-size: 1.1rem;
-        font-weight: 600;
-        text-align: center;
-        padding: 20px;
+        height: 100%;
+        flex: 1;
       }
-    }
-  </style>
-</head>
+    </style>
+  <link rel="icon" href="/app/favicon.ico"/></head>
 
-<body>
-  <noscript>
-    Necesitas habilitar JavaScript para ejecutar esta aplicación.
-  </noscript>
-  <div id="root"></div>
-  <script src="/app/_expo/static/js/web/entry-51e9d00fa0ff543e5b4566a4b4edcb79.js" defer></script>
+  <body>
+    <!-- Use static rendering with Expo Router to support running without JavaScript. -->
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <!-- The root element for your Expo app. -->
+    <div id="root"></div>
+  <script src="/app/_expo/static/js/web/entry-20578dd2cd99709ac33b2751e863d69c.js" defer></script>
 </body>
-
 </html>
