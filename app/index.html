@@ -1,12 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
   <meta charset="utf-8" />
   <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
   <title>FysiumApp</title>
-  <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+
+  <!-- Manifiesto e Iconos PWA para iPhone y Android -->
+  <link rel="manifest" href="/app/manifest.json" />
+  <link rel="icon" href="/app/favicon.ico" />
+  <link rel="apple-touch-icon" href="/app/icon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/app/icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="FysiumApp" />
+  <meta name="theme-color" content="#2D5D5D" />
+
   <style id="expo-reset">
     html,
     body {
@@ -23,7 +33,6 @@
       height: 100%;
       flex: 1;
       max-width: 800px;
-      /* Ancho cómodo tipo panel web / tablet, no 100% de pantalla */
       margin: 0 auto;
       box-shadow: 0 0 35px rgba(0, 0, 0, 0.08);
       background-color: #ffffff;
@@ -36,15 +45,12 @@
       }
     }
   </style>
-  <link rel="icon" href="/app/favicon.ico" />
 </head>
 
 <body>
-  <!-- Use static rendering with Expo Router to support running without JavaScript. -->
   <noscript>
-    You need to enable JavaScript to run this app.
+    Necesitas habilitar JavaScript para ejecutar esta aplicación.
   </noscript>
-  <!-- The root element for your Expo app. -->
   <div id="root"></div>
   <script src="/app/_expo/static/js/web/entry-669a3724f1d3e80642a61b4c21e9272c.js" defer></script>
 </body>
