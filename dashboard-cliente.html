@@ -1,0 +1,2223 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FysiumApp - Portal del Paciente</title>
+
+  <!-- Tipografía Google Fonts e Iconos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Estilos limpios -->
+  <link rel="stylesheet" href="styles/dashboard-cliente.css">
+
+  <!-- Leaflet para el Mapa -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Supabase SDK por CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+  <!-- BARRA LATERAL (SIDEBAR) -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <img src="assets/FysiumApp_logo.png" alt="Fysium Logo" class="logo">
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" onclick="location.reload()">
+        <i class="fa-solid fa-house"></i> Inicio
+      </button>
+      <button class="nav-item" onclick="openModal('modalLocalizar')">
+        <i class="fa-solid fa-location-dot"></i> Localizar Profesional
+      </button>
+      <button class="nav-item" onclick="openModal('modalBuscar')">
+        <i class="fa-solid fa-magnifying-glass"></i> Buscar Profesional
+      </button>
+      <button class="nav-item" onclick="openModal('modalHistorial')">
+        <i class="fa-regular fa-folder-open"></i> Mis Sesiones y Pautas
+      </button>
+      <button class="nav-item" onclick="openModal('modalFavoritos')">
+        <i class="fa-regular fa-heart"></i> Favoritos
+      </button>
+      <button class="nav-item" onclick="openModal('modalPerfil')">
+        <i class="fa-regular fa-user"></i> Mi Perfil
+      </button>
+    </nav>
+
+    <!-- FOOTER: BOTÓN DE SALIR -->
+    <div class="sidebar-footer">
+      <button class="user-logout-card" onclick="openModal('modalLogout')" title="Cerrar sesión">
+        <div class="user-avatar" id="sidebarUserAvatar">U</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebarUserName">Cargando...</div>
+          <div class="user-action-label">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar sesión
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right user-logout-icon"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main">
+
+    <!-- CABECERA -->
+    <header class="topbar">
+      <div class="greeting">
+        <h1 id="topbarGreeting">¡Hola! </h1>
+        <p>Tu portal de salud y bienestar en FysiumApp</p>
+      </div>
+      <div class="top-actions">
+        <div class="top-user-pill">
+          <span id="topbarUserName">Cargando...</span>
+          <div class="top-user-avatar" id="topbarUserAvatar">U</div>
+        </div>
+        <div class="icon-btn" onclick="openModal('modalNotificaciones')" title="Notificaciones">
+          <i class="fa-regular fa-bell"></i>
+          <span class="badge-dot"></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENIDO CENTRAL -->
+    <div class="content-container">
+
+      <!-- SECCIÓN 1: LOS 3 BOTONES DE LA APP -->
+      <section class="app-buttons-card">
+        <button class="app-action-btn btn-localizar" onclick="openModal('modalLocalizar')">
+          <i class="fa-solid fa-location-dot"></i> Localizar Profesional
+        </button>
+
+        <button class="app-action-btn btn-buscar" onclick="openModal('modalBuscar')">
+          <i class="fa-solid fa-magnifying-glass"></i> Buscar Profesional
+        </button>
+
+        <button class="app-action-btn btn-favoritos" onclick="openModal('modalFavoritos')">
+          <i class="fa-solid fa-heart"></i> Favoritos
+        </button>
+      </section>
+
+      <!-- SECCIÓN 2: TUS PRÓXIMAS SESIONES -->
+      <section class="sessions-container">
+        <div class="section-title">
+          <span>Tus Próximas Sesiones</span>
+        </div>
+        <div id="contenedorProximasSesiones">
+          <div class="empty-state-card">
+            <p class="empty-state-text"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tus citas...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 3: REGISTRO DE SESIONES -->
+      <section>
+        <div class="section-title">
+          <span>Registro de Sesiones</span>
+        </div>
+
+        <div class="session-record-card" onclick="openModal('modalHistorial')">
+          <div class="record-card-left">
+            <div class="folder-icon-box">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <div class="record-card-text">
+              <h4>Ver mis sesiones y pautas</h4>
+              <p>Consulta las notas y progreso</p>
+            </div>
+          </div>
+          <div class="record-card-arrow">
+            <i class="fa-solid fa-chevron-right"></i>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- MODAL: LOCALIZAR PROFESIONAL -->
+  <div class="modal-overlay" id="modalLocalizar">
+    <div class="modal-box modal-mapa">
+      <button class="modal-close-btn" onclick="closeModal('modalLocalizar')"><i class="fa-solid fa-xmark"></i></button>
+
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-right: 48px; margin-bottom: 6px;">
+        <div>
+          <h3 style="font-size: 20px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-location-dot" style="color: var(--primary);"></i> Localizar Profesional
+          </h3>
+          <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 4px;">
+            Profesionales y centros registrados en el mapa de FysiumApp.
+          </p>
+        </div>
+
+        <button class="gps-btn" onclick="centrarEnMiUbicacion()">
+          <i class="fa-solid fa-crosshairs"></i> Mi ubicación
+        </button>
+      </div>
+
+      <div id="mapa-interactivo"></div>
+
+      <div class="map-header-status">
+        <span id="mapCentrosCount"><i class="fa-solid fa-spinner fa-spin"></i> Conectando con Supabase...</span>
+        <span><i class="fa-solid fa-circle" style="color: #2563EB; font-size: 10px;"></i> Tu GPS &nbsp; <i class="fa-solid fa-circle" style="color: #1E293B; font-size: 10px;"></i> Centro &nbsp; <i class="fa-solid fa-circle" style="color: #2D5D5D; font-size: 10px;"></i> Fisio</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: BUSCADOR (RÉPLICA EXACTA DE LA PANTALLA DE LA APP) -->
+  <!-- ======================================================== -->
+  <div class="modal-overlay" id="modalBuscar">
+    <div class="modal-box modal-buscador-clean">
+
+      <!-- 1. Botón Volver -->
+      <button class="btn-volver-app" onclick="closeModal('modalBuscar')">
+        <i class="fa-solid fa-chevron-left"></i> Volver
+      </button>
+
+      <!-- 2. Slider Distancia máxima -->
+      <div class="distancia-card-clean">
+        <div class="distancia-header-row">
+          <span>Distancia máxima de</span>
+          <span class="distancia-km-valor" id="distanciaKmLabel">50 km</span>
+        </div>
+        <input type="range" class="distancia-slider" id="sliderDistancia" min="5" max="150" step="5" value="50" oninput="actualizarLabelDistancia(this.value)" onchange="onSoltarSliderDistancia(this.value)">
+      </div>
+
+      <!-- 3. ¿Cuándo tienes libre? -->
+      <div class="clean-section-title">¿Cuándo tienes libre?</div>
+      <div class="when-row">
+        <!-- Píldora Fecha -->
+        <div class="when-pill-btn" onclick="document.getElementById('hiddenDatePicker').showPicker()">
+          <i class="fa-regular fa-calendar"></i>
+          <span id="labelFechaTexto">29/09/2026</span>
+          <input type="date" id="hiddenDatePicker" style="position:absolute; opacity:0; pointer-events:none; width:1px; height:1px;" onchange="onFechaSeleccionada(this.value)">
+        </div>
+
+        <!-- Píldora Hora -->
+        <div class="when-pill-btn" onclick="toggleHoraDropdown(event)">
+          <i class="fa-regular fa-clock"></i>
+          <span id="labelHoraTexto">Cualquier hora</span>
+        </div>
+
+        <!-- Desplegable selector de horas -->
+        <div class="horas-dropdown-box" id="horasDropdown">
+          <div style="font-size:12px; font-weight:700; color:#64748B; margin-bottom:6px; text-transform:uppercase;">Selecciona franja (±2h)</div>
+          <button class="hora-option-btn active" style="width:100%; margin-bottom:8px;" onclick="seleccionarHora('')">Cualquier hora</button>
+          <div class="horas-grid">
+            <button class="hora-option-btn" onclick="seleccionarHora('09:00')">09:00</button>
+            <button class="hora-option-btn" onclick="seleccionarHora('10:00')">10:00</button>
+            <button class="hora-option-btn" onclick="seleccionarHora('11:00')">11:00</button>
+            <button class="hora-option-btn" onclick="seleccionarHora('12:00')">12:00</button>
+            <button class="hora-option-btn" onclick="seleccionarHora('13:00')">13:00</button>
+            <button class="hora-option-btn" onclick="seleccionarHora('14:00')">14:00</button>
+            <button class="hora-option-btn" onclick="seleccionarHora('16:00')">16:00</button>
+            <button class="hora-option-btn" onclick="seleccionarHora('17:00')">17:00</button>
+            <button class="hora-option-btn" onclick="seleccionarHora('18:00')">18:00</button>
+            <button class="hora-option-btn" onclick="seleccionarHora('19:00')">19:00</button>
+            <button class="hora-option-btn" onclick="seleccionarHora('20:00')">20:00</button>
+            <button class="hora-option-btn" onclick="seleccionarHora('21:00')">21:00</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Especialidad (Opcional) -->
+      <div class="clean-section-title" style="cursor: pointer;" onclick="toggleAcordeonEspecialidad()">
+        <span>Especialidad (Opcional)</span>
+        <i class="fa-solid fa-chevron-up" id="chevronEspIcon"></i>
+      </div>
+
+      <div id="bloqueEspecialidades">
+        <div class="specialty-search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" class="specialty-input" id="inputEspecialidad" placeholder="Escribe especialidad (ej: Pilates)..." oninput="onInputEspecialidad(this.value)">
+        </div>
+
+        <div class="specialty-chips-container">
+          <button class="clean-chip" onclick="seleccionarChip(this, 'Rendimiento deportivo')">Rendimiento deportivo</button>
+          <button class="clean-chip" onclick="seleccionarChip(this, 'Pilates')">Pilates</button>
+          <button class="clean-chip" onclick="seleccionarChip(this, 'Readaptación funcional')">Readaptación funcional</button>
+          <button class="clean-chip" onclick="seleccionarChip(this, 'Descarga muscular')">Descarga muscular</button>
+          <button class="clean-chip" onclick="seleccionarChip(this, 'Movilidad y postura')">Movilidad y postura</button>
+        </div>
+      </div>
+
+      <!-- 5. Conteo de resultados -->
+      <div class="conteo-label-clean" id="labelConteoFisios">
+        0 profesionales encontrados
+      </div>
+
+      <!-- 6. Resultados o Estado Vacío -->
+      <div id="contenedorResultadosBuscador">
+        <div class="empty-view-app">
+          <div class="empty-cal-icon-box">
+            <i class="fa-regular fa-calendar"></i>
+          </div>
+          <p id="labelTextoVacio">No hemos encontrado profesionales libres el 29/09/2026.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: PERFIL Y RESERVA DEL PROFESIONAL (ESTILO APP) -->
+  <!-- ======================================================== -->
+  <div class="modal-overlay" id="modalPerfilReserva">
+    <div class="modal-box modal-perfil-reserva">
+
+      <!-- 1. Botón Volver Dinámico (Recuerda de dónde vienes) -->
+      <button class="btn-volver-app" onclick="volverDesdePerfil()">
+        <i class="fa-solid fa-chevron-left"></i> <span id="textoBotonVolverPerfil">Volver a los resultados</span>
+      </button>
+      <!-- 2. Cabecera Perfil del Profesional -->
+      <div class="perfil-fisio-header-card" id="perfilFisioHeader">
+        <!-- Rellenado dinámicamente -->
+      </div>
+      <!-- 3. Mapa de la Consulta del Profesional -->
+      <div class="perfil-mapa-section">
+        <div class="perfil-section-label">
+          <i class="fa-solid fa-location-dot" style="color: var(--primary);"></i> Ubicación del centro
+        </div>
+        <div id="mapaDetalleFisio"></div>
+        <div class="perfil-mapa-footer">
+          <span id="perfilDireccionTexto"><i class="fa-solid fa-location-arrow"></i> Cargando dirección...</span>
+          <a id="perfilGoogleMapsLink" href="#" target="_blank" class="btn-como-llegar-clean">
+            <i class="fa-solid fa-diamond-turn-right"></i> Cómo llegar (Google Maps)
+          </a>
+        </div>
+      </div>
+      <!-- 4. Calendario Mensual con Días Libres Marcados -->
+      <div class="perfil-calendario-section">
+        <div class="perfil-section-label">
+          <i class="fa-regular fa-calendar-days" style="color: var(--primary);"></i> Días con disponibilidad
+        </div>
+        <!-- Widget Calendario del Mes -->
+        <div class="calendario-mes-widget">
+          <div class="cal-mes-header">
+            <button class="cal-nav-btn" onclick="cambiarMesCalendario(-1)" title="Mes anterior">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span class="cal-mes-titulo" id="calMesTitulo">Octubre 2026</span>
+            <button class="cal-nav-btn" onclick="cambiarMesCalendario(1)" title="Mes siguiente">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+          <div class="cal-semana-dias">
+            <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+          </div>
+          <div class="cal-dias-grid" id="calDiasGrid">
+            <!-- Celdas de los días generadas dinámicamente -->
+          </div>
+        </div>
+        <div class="cal-leyenda-row">
+          <span><span class="dot-disponible"></span> Día con citas libres</span>
+          <span id="labelFechaSeleccionadaTexto" style="font-weight: 700; color: #1E293B;">Selecciona un día</span>
+        </div>
+        <div style="font-size: 13px; font-weight: 700; color: #475569; margin-top: 16px; margin-bottom: 10px;">
+          Horas disponibles para el día seleccionado:
+        </div>
+        <div id="contenedorHorasReserva" class="horas-reserva-grid">
+          <!-- Rellenado con las horas del día -->
+        </div>
+      </div>
+
+      <!-- 5. Barra Inferior de Confirmación -->
+      <div class="resumen-confirmar-bar" id="barraConfirmarReserva" style="display: none;">
+        <div class="resumen-info-reserva">
+          <div style="font-size: 12px; color: #64748B; font-weight: 600;">Hora seleccionada:</div>
+          <div id="textoResumenSlot" style="font-size: 16px; font-weight: 800; color: var(--primary);">--:--</div>
+        </div>
+        <button class="btn-confirmar-reserva-final" id="btnConfirmarReserva" onclick="confirmarReservaFinal()">
+          <i class="fa-solid fa-check"></i> Reservar Cita
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRO DE SESIONES Y PAUTAS -->
+  <div class="modal-overlay" id="modalHistorial">
+    <div class="modal-box" style="max-width: 680px;">
+      <button class="modal-close-btn" onclick="closeModal('modalHistorial')"><i class="fa-solid fa-xmark"></i></button>
+
+      <div style="padding-right: 48px; margin-bottom: 16px;">
+        <h3 style="font-size: 20px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-folder-open" style="color: var(--primary);"></i> Sesiones y Pautas
+        </h3>
+        <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 4px;">
+          Historial de tratamiento, recomendaciones y citas con tus profesionales
+        </p>
+      </div>
+      <!-- Navegación por pestañas del historial -->
+      <div class="historial-tabs-nav">
+        <button class="historial-tab-btn active" id="tabBtnPautas" onclick="cambiarPestanaHistorial('pautas')">
+          <i class="fa-solid fa-dumbbell"></i> Pautas y Ejercicios
+        </button>
+        <button class="historial-tab-btn" id="tabBtnCitas" onclick="cambiarPestanaHistorial('citas')">
+          <i class="fa-regular fa-calendar-check"></i> Historial de Citas
+        </button>
+      </div>
+      <!-- Lista 1: Pautas y Ejercicios -->
+      <div id="historialPautasLista" class="historial-content-list">
+        <!-- Rellenado dinámicamente desde Supabase -->
+      </div>
+      <!-- Lista 2: Historial de Citas Pasadas -->
+      <div id="historialCitasLista" class="historial-content-list" style="display: none;">
+        <!-- Rellenado dinámicamente desde Supabase -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: FAVORITOS -->
+  <div class="modal-overlay" id="modalFavoritos">
+    <div class="modal-box modal-favoritos-box">
+      <button class="modal-close-btn" onclick="closeModal('modalFavoritos')"><i class="fa-solid fa-xmark"></i></button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-right: 48px;">
+        <h3 style="font-size: 20px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-heart" style="color: var(--accent);"></i> Tus Favoritos
+        </h3>
+        <span id="favsCountLabel" style="font-size: 13px; font-weight: 600; color: var(--text-muted);"></span>
+      </div>
+      <div id="contenedorListaFavoritos" class="favoritos-list-container">
+        <!-- Rellenado dinámicamente desde Supabase -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MI PERFIL (RÉPLICA DE LA APP MÓVIL) -->
+  <div class="modal-overlay" id="modalPerfil">
+    <div class="modal-box modal-perfil-box">
+      <button class="modal-close-btn" onclick="closeModal('modalPerfil')"><i class="fa-solid fa-xmark"></i></button>
+      <div style="padding-right: 48px; margin-bottom: 20px;">
+        <h3 style="font-size: 20px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px;">
+          <i class="fa-regular fa-user" style="color: var(--primary);"></i> Mi Perfil
+        </h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+          Gestiona tus datos personales y preferencias sincronizados con la app móvil
+        </p>
+      </div>
+      <!-- Sección Foto de Perfil -->
+      <div class="perfil-avatar-wrapper">
+        <div class="perfil-avatar-circle" id="perfilAvatarPreview">
+          <span id="perfilAvatarInicial">U</span>
+        </div>
+        <button type="button" class="perfil-camera-btn" onclick="document.getElementById('inputFotoPerfil').click()" title="Cambiar foto de perfil">
+          <i class="fa-solid fa-camera"></i>
+        </button>
+        <input type="file" id="inputFotoPerfil" accept="image/*" style="display: none;" onchange="manejarSeleccionFotoPerfil(event)">
+        <span class="perfil-avatar-hint">Pulsa la cámara para cambiar tu foto</span>
+      </div>
+      <!-- Formulario de Datos -->
+      <form id="formPerfilCliente" onsubmit="guardarPerfilCliente(event)">
+        <div class="perfil-grid-campos">
+
+          <!-- Nombre y Apellidos -->
+          <div class="perfil-campo-group">
+            <label class="perfil-campo-label">Nombre y Apellidos</label>
+            <div class="perfil-input-wrapper">
+              <i class="fa-regular fa-user perfil-input-icon"></i>
+              <input type="text" id="perfilInputNombre" class="perfil-input" required placeholder="Tu nombre y apellidos">
+            </div>
+          </div>
+          <!-- Correo Electrónico (Solo lectura) -->
+          <div class="perfil-campo-group">
+            <label class="perfil-campo-label">Correo Electrónico</label>
+            <div class="perfil-input-wrapper disabled">
+              <i class="fa-regular fa-envelope perfil-input-icon"></i>
+              <input type="email" id="perfilInputEmail" class="perfil-input" disabled readonly>
+            </div>
+          </div>
+          <!-- Teléfono -->
+          <div class="perfil-campo-group">
+            <label class="perfil-campo-label">Teléfono de Contacto</label>
+            <div class="perfil-input-wrapper">
+              <i class="fa-solid fa-phone perfil-input-icon"></i>
+              <input type="tel" id="perfilInputTelefono" class="perfil-input" placeholder="Ej: 600 123 456">
+            </div>
+          </div>
+          <!-- Fecha de Nacimiento -->
+          <div class="perfil-campo-group">
+            <label class="perfil-campo-label">Fecha de Nacimiento</label>
+            <div class="perfil-input-wrapper">
+              <i class="fa-regular fa-calendar perfil-input-icon"></i>
+              <input type="text" id="perfilInputFechaNac" class="perfil-input" placeholder="DD/MM/AAAA" maxlength="10" oninput="formatearFechaInput(this)">
+            </div>
+          </div>
+          <!-- Nueva Contraseña -->
+          <div class="perfil-campo-group perfil-campo-full">
+            <label class="perfil-campo-label">Nueva Contraseña <span style="font-weight:400; color:var(--text-muted);">(Opcional)</span></label>
+            <div class="perfil-input-wrapper">
+              <i class="fa-solid fa-lock perfil-input-icon"></i>
+              <input type="password" id="perfilInputPassword" class="perfil-input" placeholder="Introduce una contraseña si deseas cambiarla">
+            </div>
+          </div>
+          <!-- Notas y Preferencias -->
+          <div class="perfil-campo-group perfil-campo-full">
+            <label class="perfil-campo-label">Notas y Preferencias <span style="font-weight:400; color:var(--text-muted);">(Opcional)</span></label>
+            <div class="perfil-input-wrapper textarea-wrapper">
+              <i class="fa-regular fa-file-lines perfil-input-icon" style="top: 14px;"></i>
+              <textarea id="perfilInputNotas" class="perfil-input perfil-textarea" placeholder="Indica tus antecedentes, objetivos, hábitos o preferencias..."></textarea>
+            </div>
+          </div>
+        </div>
+        <!-- Botones de Acción -->
+        <div class="perfil-actions-row">
+          <button type="button" class="btn-cancelar-perfil" onclick="closeModal('modalPerfil')">Cancelar</button>
+          <button type="submit" class="btn-guardar-perfil" id="btnGuardarPerfil">
+            <i class="fa-solid fa-check"></i> Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SALIR -->
+  <div class="modal-overlay" id="modalLogout">
+    <div class="modal-box">
+      <div style="text-align: center;">
+        <div class="logout-warning-icon">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </div>
+        <h3 style="font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px;">¿Deseas cerrar sesión?</h3>
+        <p style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">
+          Se cerrará tu sesión de paciente en este navegador. Tendrás que volver a identificarte para acceder a tus citas.
+        </p>
+        <div class="logout-modal-actions">
+          <button class="btn-modal-cancel" onclick="closeModal('modalLogout')">Cancelar</button>
+          <button class="btn-modal-logout" onclick="confirmarSalida()">Sí, cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- MODAL: NOTIFICACIONES -->
+  <div class="modal-overlay" id="modalNotificaciones">
+    <div class="modal-box" style="max-width: 520px;">
+      <button class="modal-close-btn" onclick="closeModal('modalNotificaciones')"><i class="fa-solid fa-xmark"></i></button>
+      <div style="padding-right: 44px; margin-bottom: 16px;">
+        <h3 style="font-size: 20px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px;">
+          <i class="fa-regular fa-bell" style="color: var(--primary);"></i> Notificaciones
+        </h3>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+          Avisos, confirmaciones de reserva y recordatorios de tus sesiones
+        </p>
+      </div>
+      <div id="contenedorListaNotificaciones" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
+        <!-- Se rellena dinámicamente con citas próximas o recordatorios -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // 1. INICIALIZACIÓN SUPABASE (ESQUEMA PUBLIC)
+    const SUPABASE_URL = 'https://ctwxrqatrukhbcaqzfjc.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0d3hycWF0cnVraGJjYXF6ZmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzQ4MDMsImV4cCI6MjA5Mjg1MDgwM30.YPuuZ8vpBLWyr7zKa_yqzgbwX_yAduC9f6jp2H3Nz6c';
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      db: { schema: 'public' }
+    });
+    window.supabaseClient = supabaseClient;
+
+    let map = null;
+    let userMarker = null;
+    let userCoords = null;
+    let allBounds = [];
+
+    // Estado del buscador limpio
+    let estadoBuscador = {
+      fechaISO: '',
+      fechaFormateada: '',
+      hora: '',
+      distanciaKm: 50,
+      especialidad: ''
+    };
+
+    function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * (Math.PI / 180);
+      const dLon = (lon2 - lon1) * (Math.PI / 180);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      inicializarUsuarioReal();
+      cargarProximasSesiones();
+      // Fecha de hoy por defecto
+      const hoy = new Date();
+      const hoyISO = hoy.toISOString().split('T')[0];
+      const dia = String(hoy.getDate()).padStart(2, '0');
+      const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+      const anio = hoy.getFullYear();
+
+      estadoBuscador.fechaISO = hoyISO;
+      estadoBuscador.fechaFormateada = `${dia}/${mes}/${anio}`;
+
+      const datePicker = document.getElementById('hiddenDatePicker');
+      if (datePicker) datePicker.value = hoyISO;
+      const labelFecha = document.getElementById('labelFechaTexto');
+      if (labelFecha) labelFecha.innerText = estadoBuscador.fechaFormateada;
+
+      // Obtener GPS del usuario
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          },
+          () => { },
+          { enableHighAccuracy: true, timeout: 6000 }
+        );
+      }
+    });
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('show');
+      if (id === 'modalLocalizar') {
+        setTimeout(initMap, 200);
+      }
+      if (id === 'modalBuscar') {
+        ejecutarBusquedaLimpia();
+      }
+      // Cargar favoritos al abrir el modal
+      if (id === 'modalFavoritos') {
+        cargarFavoritos();
+      }
+      if (id === 'modalHistorial') {
+        cargarRegistroSesiones();
+      }
+      if (id === 'modalPerfil') {
+        cargarDatosPerfilModal();
+      }
+      if (id === 'modalNotificaciones') {
+        cargarNotificaciones();
+      }
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal(overlay.id);
+      });
+    });
+
+    function confirmarSalida() {
+      closeModal('modalLogout');
+      supabaseClient.auth.signOut().then(() => {
+        window.location.href = 'index.html';
+      });
+    }
+
+    // ==========================================
+    // 2. LÓGICA DEL MAPA
+    // ==========================================
+    async function initMap() {
+      if (!map) {
+        const latInicial = userCoords ? userCoords.lat : 40.4168;
+        const lngInicial = userCoords ? userCoords.lng : -3.7038;
+
+        map = L.map('mapa-interactivo').setView([latInicial, lngInicial], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        await cargarMarcadoresDesdeSupabase();
+      } else {
+        map.invalidateSize();
+      }
+
+      centrarEnMiUbicacion();
+    }
+
+    function centrarEnMiUbicacion() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const uLat = pos.coords.latitude;
+            const uLng = pos.coords.longitude;
+            userCoords = { lat: uLat, lng: uLng };
+
+            if (!userMarker) {
+              const userIcon = L.divIcon({
+                className: '',
+                html: '<div style="width:20px;height:20px;background:#2563EB;border:3px solid white;border-radius:50%;box-shadow:0 0 14px rgba(37,99,235,0.85);"></div>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+              });
+              userMarker = L.marker([uLat, uLng], { icon: userIcon }).addTo(map).bindPopup('<b>Tu ubicación</b>');
+            } else {
+              userMarker.setLatLng([uLat, uLng]);
+            }
+
+            map.flyTo([uLat, uLng], 14, { duration: 1.2 });
+          },
+          (err) => {
+            console.warn("Sin GPS:", err);
+            if (allBounds.length > 0) {
+              map.fitBounds(allBounds, { padding: [40, 40], maxZoom: 14 });
+            }
+          },
+          { enableHighAccuracy: true, timeout: 6000 }
+        );
+      } else if (allBounds.length > 0) {
+        map.fitBounds(allBounds, { padding: [40, 40], maxZoom: 14 });
+      }
+    }
+
+    async function cargarMarcadoresDesdeSupabase() {
+      const countLabel = document.getElementById('mapCentrosCount');
+      try {
+        const { data: clinicas } = await supabaseClient.from('clinicas').select('*');
+        const { data: fisios } = await supabaseClient.from('fisios').select('*');
+
+        const items = [
+          ...(clinicas || []).map(c => ({ ...c, tipo: 'clinica' })),
+          ...(fisios || []).map(f => ({ ...f, tipo: 'fisio' }))
+        ];
+
+        // SOLO REGISTRADOS EN EL MAPA
+        const conCoords = items.filter(i => i.latitude && i.longitude && !isNaN(parseFloat(i.latitude)) && !isNaN(parseFloat(i.longitude)));
+        countLabel.innerText = `${conCoords.length} profesionales/centros encontrados en el mapa`;
+
+        allBounds = [];
+
+        const svgClinica = '<div style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.3));cursor:pointer;"><svg width="32" height="40" viewBox="0 0 34 42" fill="none"><path d="M17 0C7.61 0 0 7.61 0 17C0 27.5 17 42 17 42C17 42 34 27.5 34 17C34 7.61 26.39 0 17 0Z" fill="#1E293B"/><circle cx="17" cy="16" r="11" fill="white"/><path d="M11 22V11H18V22M18 22V14H23V22" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round"/><line x1="13" y1="13.5" x2="16" y2="13.5" stroke="#1E293B" stroke-width="1.5"/></svg></div>';
+        const svgFisio = '<div style="filter:drop-shadow(0 4px 6px rgba(0,0,0,0.3));cursor:pointer;"><svg width="32" height="40" viewBox="0 0 34 42" fill="none"><path d="M17 0C7.61 0 0 7.61 0 17C0 27.5 17 42 17 42C17 42 34 27.5 34 17C34 7.61 26.39 0 17 0Z" fill="#2D5D5D"/><circle cx="17" cy="16" r="11" fill="white"/><circle cx="17" cy="13" r="3" fill="#2D5D5D"/><path d="M11.5 21C11.5 18 14 17 17 17C20 17 22.5 18 22.5 21" stroke="#2D5D5D" stroke-width="2" stroke-linecap="round"/></svg></div>';
+
+        conCoords.forEach(item => {
+          const lat = parseFloat(item.latitude);
+          const lng = parseFloat(item.longitude);
+          const isClinica = item.tipo === 'clinica';
+
+          const icon = L.divIcon({
+            className: '',
+            html: isClinica ? svgClinica : svgFisio,
+            iconSize: [32, 40],
+            iconAnchor: [16, 40],
+            popupAnchor: [0, -36]
+          });
+
+          const googleMapsLink = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+          const accionCitas = isClinica
+            ? `abrirCitasDesdeMapa('clinica', '${item.id}')`
+            : `abrirCitasDesdeMapa('fisio', '${item.user_id}')`;
+          const foto = item.foto_perfil_url || item.foto_url;
+          const avatarHtml = foto
+            ? `<img src="${foto}" alt="${item.nombre}" style="width:44px; height:44px; border-radius:10px; object-fit:cover; flex-shrink:0;">`
+            : `<div style="width:44px; height:44px; border-radius:10px; background:${isClinica ? '#1E293B' : '#2D5D5D'}; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; flex-shrink:0;">${item.nombre ? item.nombre.charAt(0).toUpperCase() : (isClinica ? 'C' : 'F')}</div>`;
+          const popupHtml = `
+            <div style="min-width: 220px; font-family: Inter, sans-serif;">
+              <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                ${avatarHtml}
+                <div style="flex: 1; min-width: 0;">
+                  <h4 style="font-size: 14.5px; font-weight: 700; color: #1E293B; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    ${item.nombre || (isClinica ? 'Centro' : 'Profesional')}
+                  </h4>
+                  <p style="font-size: 11.5px; color: #64748B; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    <i class="fa-solid fa-location-dot" style="color:var(--primary); font-size:10px;"></i> ${item.direccion || (isClinica ? 'Centro Fysium' : 'Consulta')}
+                  </p>
+                </div>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <a href="${googleMapsLink}" target="_blank" style="flex:1; text-align:center; background:#F1F5F9; color:#1E293B; text-decoration:none; padding:7px 10px; border-radius:8px; font-size:12px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                  <i class="fa-solid fa-diamond-turn-right"></i> Ruta
+                </a>
+                <button onclick="${accionCitas}" style="flex:1; background:#2D5D5D; color:white; border:none; padding:7px 10px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                  <i class="fa-regular fa-calendar-check"></i> Citas
+                </button>
+              </div>
+            </div>
+          `;
+
+          L.marker([lat, lng], { icon: icon }).addTo(map).bindPopup(popupHtml);
+          allBounds.push([lat, lng]);
+        });
+
+      } catch (err) {
+        console.error("Error al cargar marcadores:", err);
+        countLabel.innerText = "Error al conectar con Supabase.";
+      }
+    }
+
+    async function abrirCitasDesdeMapa(tipo, id) {
+      if (tipo === 'fisio') {
+        abrirPerfilReservaFisio(id, null, 'modalLocalizar');
+      } else if (tipo === 'clinica') {
+        try {
+          // Buscar el primer fisioterapeuta de la clínica
+          const { data: fisios } = await supabaseClient
+            .from('fisios')
+            .select('user_id')
+            .eq('clinica_id', id)
+            .limit(1);
+          if (fisios && fisios.length > 0) {
+            abrirPerfilReservaFisio(fisios[0].user_id, null, 'modalLocalizar');
+          } else {
+            closeModal('modalLocalizar');
+            openModal('modalBuscar');
+          }
+        } catch (e) {
+          closeModal('modalLocalizar');
+          openModal('modalBuscar');
+        }
+      }
+    }
+
+    // ==========================================
+    // 3. BUSCADOR LIMPIO (INTERACCIÓN EXACTA DE LA APP)
+    // ==========================================
+    // 1. Solo actualiza el texto visual en pantalla a 60fps (CERO peticiones a Supabase mientras arrastras)
+    function actualizarLabelDistancia(valor) {
+      const valorNum = parseInt(valor, 10);
+      const label = document.getElementById('distanciaKmLabel');
+      if (label) {
+        label.innerText = valorNum >= 150 ? 'Toda España' : `${valorNum} km`;
+      }
+    }
+    // 2. Hace la búsqueda ÚNICAMENTE cuando sueltas la barra
+    function onSoltarSliderDistancia(valor) {
+      estadoBuscador.distanciaKm = parseInt(valor, 10);
+      ejecutarBusquedaLimpia();
+    }
+
+    function onFechaSeleccionada(valorISO) {
+      if (!valorISO) return;
+      const partes = valorISO.split('-');
+      estadoBuscador.fechaISO = valorISO;
+      estadoBuscador.fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+      document.getElementById('labelFechaTexto').innerText = estadoBuscador.fechaFormateada;
+      ejecutarBusquedaLimpia();
+    }
+
+    function toggleHoraDropdown(e) {
+      e.stopPropagation();
+      const dd = document.getElementById('horasDropdown');
+      dd.classList.toggle('show');
+    }
+
+    document.addEventListener('click', (e) => {
+      const dd = document.getElementById('horasDropdown');
+      if (dd && !dd.contains(e.target)) {
+        dd.classList.remove('show');
+      }
+    });
+
+    function seleccionarHora(hora) {
+      estadoBuscador.hora = hora;
+      document.getElementById('labelHoraTexto').innerText = hora ? `${hora} (±2h)` : 'Cualquier hora';
+      document.getElementById('horasDropdown').classList.remove('show');
+      ejecutarBusquedaLimpia();
+    }
+
+    function toggleAcordeonEspecialidad() {
+      const bloque = document.getElementById('bloqueEspecialidades');
+      const icono = document.getElementById('chevronEspIcon');
+      if (bloque.style.display === 'none') {
+        bloque.style.display = 'block';
+        icono.className = 'fa-solid fa-chevron-up';
+      } else {
+        bloque.style.display = 'none';
+        icono.className = 'fa-solid fa-chevron-down';
+      }
+    }
+
+    function onInputEspecialidad(texto) {
+      estadoBuscador.especialidad = texto.trim().toLowerCase();
+      // Desmarcar chips si escribe texto libre
+      document.querySelectorAll('.clean-chip').forEach(c => c.classList.remove('active'));
+      ejecutarBusquedaLimpia();
+    }
+
+    function seleccionarChip(btn, nombreChip) {
+      const yaActivo = btn.classList.contains('active');
+      document.querySelectorAll('.clean-chip').forEach(c => c.classList.remove('active'));
+
+      if (yaActivo) {
+        estadoBuscador.especialidad = '';
+        document.getElementById('inputEspecialidad').value = '';
+      } else {
+        btn.classList.add('active');
+        estadoBuscador.especialidad = nombreChip.toLowerCase();
+        document.getElementById('inputEspecialidad').value = nombreChip;
+      }
+      ejecutarBusquedaLimpia();
+    }
+
+    // ==========================================
+    // EJECUCIÓN DE BÚSQUEDA REAL EN SUPABASE
+    // ==========================================
+    // Variables globales para la vista de perfil y reserva
+    let todosFisiosCache = [];
+    let fisioSeleccionado = null;
+    let fechaReservaActual = '';
+    let miniMapFisio = null;
+    let miniMapMarker = null;
+    let slotSeleccionado = null;
+
+    // ==========================================
+    // EJECUCIÓN DE BÚSQUEDA REAL EN SUPABASE
+    // ==========================================
+    async function ejecutarBusquedaLimpia() {
+      const contenedor = document.getElementById('contenedorResultadosBuscador');
+      const labelConteo = document.getElementById('labelConteoFisios');
+
+      labelConteo.innerText = "Buscando profesionales...";
+
+      try {
+        // 1. Obtener todos los fisios
+        const { data: todosFisios, error: errFisios } = await supabaseClient
+          .from('fisios')
+          .select('*, clinicas(nombre, latitude, longitude, direccion)');
+
+        if (errFisios) throw errFisios;
+
+        // Guardar caché para acceso rápido al perfil
+        todosFisiosCache = todosFisios || [];
+
+        // 2. FILTRO ESTRICTO: SOLO REGISTRADOS EN EL MAPA
+        let fisiosValidos = (todosFisios || []).filter(f => {
+          const lat = parseFloat(f.latitude || (f.clinicas ? f.clinicas.latitude : null));
+          const lng = parseFloat(f.longitude || (f.clinicas ? f.clinicas.longitude : null));
+          return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+        });
+
+        // 3. FILTRO POR ESPECIALIDAD O TEXTO
+        if (estadoBuscador.especialidad) {
+          fisiosValidos = fisiosValidos.filter(f => {
+            const nom = (f.nombre || '').toLowerCase();
+            const esp = (f.especialidad || '').toLowerCase();
+            const clin = (f.clinicas?.nombre || '').toLowerCase();
+            return nom.includes(estadoBuscador.especialidad) || esp.includes(estadoBuscador.especialidad) || clin.includes(estadoBuscador.especialidad);
+          });
+        }
+
+        // 4. FILTRO POR DISTANCIA (Hasta X km)
+        fisiosValidos = fisiosValidos.map(f => {
+          const lat = parseFloat(f.latitude || (f.clinicas ? f.clinicas.latitude : null));
+          const lng = parseFloat(f.longitude || (f.clinicas ? f.clinicas.longitude : null));
+          let d = null;
+          if (userCoords && !isNaN(lat) && !isNaN(lng)) {
+            d = calcularDistanciaKm(userCoords.lat, userCoords.lng, lat, lng);
+          }
+          return { ...f, distancia: d };
+        });
+        // Si está al máximo (150), no excluimos a nadie por distancia
+        const esTodaEspana = estadoBuscador.distanciaKm >= 150;
+        if (userCoords && !esTodaEspana) {
+          fisiosValidos = fisiosValidos.filter(f => f.distancia === null || f.distancia <= estadoBuscador.distanciaKm);
+        }
+
+        if (fisiosValidos.length === 0) {
+          labelConteo.innerText = "0 profesionales encontrados";
+          contenedor.innerHTML = `
+            <div class="empty-view-app">
+              <div class="empty-cal-icon-box"><i class="fa-regular fa-calendar"></i></div>
+              <p>No hemos encontrado profesionales libres el ${estadoBuscador.fechaFormateada}.</p>
+            </div>
+          `;
+          return;
+        }
+
+        // 5. CONSULTAR CITAS LIBRES EN LA FECHA ELEGIDA
+        const fisioIds = fisiosValidos.map(f => f.user_id);
+        const { data: huecos, error: errH } = await supabaseClient
+          .from('horarios_disponibles')
+          .select('id, fisio_id, dia, hora, hora_fin')
+          .eq('estado', 'libre')
+          .eq('dia', estadoBuscador.fechaISO)
+          .in('fisio_id', fisioIds);
+
+        if (errH) throw errH;
+
+        let citasFiltradas = huecos || [];
+        // Descartar horas que ya pasaron si se busca para el día de hoy
+        const ahora = new Date();
+        const hoyISO = ahora.toISOString().split('T')[0];
+        const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+        if (estadoBuscador.fechaISO === hoyISO) {
+          citasFiltradas = citasFiltradas.filter(c => {
+            const [hCita, mCita] = c.hora.split(':').map(Number);
+            const minCita = (hCita || 0) * 60 + (mCita || 0);
+            return minCita > minutosAhora;
+          });
+        }
+        // 6. APLICAR MARGEN DE ±2 HORAS (120 MIN) SI SE SELECCIONÓ HORA
+        if (estadoBuscador.hora && citasFiltradas.length > 0) {
+          const [hSel, mSel] = estadoBuscador.hora.split(':').map(Number);
+          const minSel = hSel * 60 + mSel;
+          citasFiltradas = citasFiltradas.filter(c => {
+            const [hCita, mCita] = c.hora.split(':').map(Number);
+            const minCita = hCita * 60 + mCita;
+            return Math.abs(minCita - minSel) <= 120;
+          });
+        }
+        // 7. VINCULAR CITAS A LOS FISIOS (ORDEN NUMÉRICO 9:00 ANTES QUE 11:00)
+        const fisiosConHueco = fisiosValidos.map(f => {
+          const misHoras = citasFiltradas
+            .filter(c => c.fisio_id === f.user_id)
+            .sort((a, b) => {
+              const [hA, mA] = a.hora.split(':').map(Number);
+              const [hB, mB] = b.hora.split(':').map(Number);
+              return ((hA || 0) * 60 + (mA || 0)) - ((hB || 0) * 60 + (mB || 0));
+            });
+          return { ...f, horasDisponibles: misHoras };
+        }).filter(f => f.horasDisponibles.length > 0);
+
+        // Ordenar por distancia de menor a mayor
+        fisiosConHueco.sort((a, b) => (a.distancia || 9999) - (b.distancia || 9999));
+
+        if (fisiosConHueco.length === 0) {
+          labelConteo.innerText = "0 profesionales encontrados";
+          contenedor.innerHTML = `
+            <div class="empty-view-app">
+              <div class="empty-cal-icon-box"><i class="fa-regular fa-calendar"></i></div>
+              <p>No hemos encontrado profesionales libres el ${estadoBuscador.fechaFormateada}.</p>
+            </div>
+          `;
+          return;
+        }
+
+        labelConteo.innerText = `${fisiosConHueco.length} profesional${fisiosConHueco.length > 1 ? 'es' : ''} encontrado${fisiosConHueco.length > 1 ? 's' : ''}`;
+
+        // 8. RENDERIZAR TARJETAS CLICABLES CON BOTÓN "RESERVAR SESIÓN" Y "MAPA"
+        contenedor.innerHTML = `
+          <div class="results-list-clean">
+            ${fisiosConHueco.map(f => {
+          const distLabel = f.distancia !== null
+            ? (f.distancia < 1 ? `📍 a ${Math.round(f.distancia * 1000)} m` : `📍 a ${f.distancia.toFixed(1)} km`)
+            : 'En tu zona';
+
+          const lat = parseFloat(f.latitude || (f.clinicas ? f.clinicas.latitude : 0));
+          const lng = parseFloat(f.longitude || (f.clinicas ? f.clinicas.longitude : 0));
+          const nombreEscapado = (f.nombre || '').replace(/'/g, "\\'");
+
+          // Las horas abren el perfil preseleccionando la hora pulsada
+          const chips = f.horasDisponibles.map(h => `
+                <button class="slot-btn-clean" onclick="event.stopPropagation(); abrirPerfilReservaFisio('${f.user_id}', '${h.hora}')">
+                  ${h.hora}
+                </button>
+              `).join('');
+
+          return `
+                <div class="fisio-card-clean" onclick="abrirPerfilReservaFisio('${f.user_id}')">
+                  <div class="fisio-card-main-info">
+                    <div class="fisio-avatar-clean">
+                      ${f.foto_perfil_url ? `<img src="${f.foto_perfil_url}" alt="${f.nombre}">` : (f.nombre ? f.nombre.charAt(0).toUpperCase() : 'F')}
+                    </div>
+                    <div class="fisio-content-clean">
+                      <div class="fisio-title-row">
+                        <div>
+                          <div class="fisio-name-clean">${f.nombre}</div>
+                          <div class="fisio-sub-clean">${f.especialidad || 'Fisioterapia'}</div>
+                          <div class="fisio-sub-clean" style="color:var(--primary); font-size:12px; margin-top:2px;">
+                            <i class="fa-solid fa-location-dot"></i> ${f.clinicas ? f.clinicas.nombre : (f.direccion || 'Centro')}
+                          </div>
+                        </div>
+                        <span class="distance-pill-clean">${distLabel}</span>
+                      </div>
+
+                      <div style="margin-top:10px; font-size:12px; font-weight:700; color:#64748B;">Horarios disponibles para hoy:</div>
+                      <div class="slots-row-clean">
+                        ${chips}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- BOTONES INFERIORES: RESERVAR SESIÓN + MAPA -->
+                  <div class="fisio-card-actions-clean" onclick="event.stopPropagation();">
+                    <button class="btn-reservar-grande" onclick="abrirPerfilReservaFisio('${f.user_id}')">
+                      <i class="fa-regular fa-calendar-check"></i> RESERVAR SESIÓN
+                    </button>
+                    <button class="btn-mapa-cuadrado" title="Ver en el mapa interactivo" onclick="verFisioEnMapa(${lat}, ${lng}, '${nombreEscapado}')">
+                      <i class="fa-solid fa-map-location-dot"></i>
+                    </button>
+                  </div>
+                </div>
+              `;
+        }).join('')}
+          </div>
+        `;
+
+      } catch (err) {
+        console.error("Error al buscar:", err);
+        labelConteo.innerText = "Error al consultar";
+        contenedor.innerHTML = `<div style="text-align:center; padding:20px; color:var(--danger); font-size:13px;">No se pudo consultar Supabase: ${err.message}</div>`;
+      }
+    }
+
+    // ==========================================
+    // NAVEGACIÓN DIRECTA AL MAPA DEL PROFESIONAL
+    // ==========================================
+    function verFisioEnMapa(lat, lng, nombre) {
+      closeModal('modalBuscar');
+      closeModal('modalPerfilReserva');
+      openModal('modalLocalizar');
+      setTimeout(() => {
+        if (map) {
+          map.flyTo([lat, lng], 16, { duration: 1.2 });
+          map.eachLayer(layer => {
+            if (layer.getLatLng && layer.getPopup) {
+              const pos = layer.getLatLng();
+              if (Math.abs(pos.lat - lat) < 0.0001 && Math.abs(pos.lng - lng) < 0.0001) {
+                layer.openPopup();
+              }
+            }
+          });
+        }
+      }, 350);
+    }
+
+    // ==========================================
+    // NAVEGACIÓN Y CALENDARIO DE DISPONIBILIDAD
+    // ==========================================
+    let modalOrigen = 'modalBuscar';
+    let mesCalendarioActual = new Date();
+    let mapaCitasLibresFisio = {}; // Diccionario con días y sus citas libres: { '2026-09-30': [...] }
+    // 1. VOLVER AL MODAL ANTERIOR (SOLUCIÓN AL CICLO RARO)
+    function volverDesdePerfil() {
+      closeModal('modalPerfilReserva');
+      if (modalOrigen === 'modalFavoritos') {
+        openModal('modalFavoritos');
+      } else if (modalOrigen === 'modalLocalizar') {
+        openModal('modalLocalizar');
+      } else {
+        openModal('modalBuscar');
+      }
+    }
+    // 2. ABRIR PERFIL DEL PROFESIONAL
+    async function abrirPerfilReservaFisio(fisioId, horaPreseleccionada = null, origen = 'modalBuscar') {
+      if (!fisioId) return;
+      // Buscar en caché o consultar directamente en Supabase si venimos del mapa
+      fisioSeleccionado = (todosFisiosCache || []).find(f => f.user_id === fisioId);
+      if (!fisioSeleccionado) {
+        try {
+          const { data: fData } = await supabaseClient
+            .from('fisios')
+            .select('*, clinicas(nombre, latitude, longitude, direccion)')
+            .eq('user_id', fisioId)
+            .single();
+          if (fData) {
+            todosFisiosCache.push(fData);
+            fisioSeleccionado = fData;
+          }
+        } catch (e) {
+          console.error("Error al obtener datos del fisio:", e);
+        }
+      }
+      if (!fisioSeleccionado) return alert("No se pudo cargar la información del profesional.");
+      modalOrigen = origen;
+      // Actualizar el texto del botón volver según de dónde venimos
+      const txtVolver = document.getElementById('textoBotonVolverPerfil');
+      if (txtVolver) {
+        if (origen === 'modalFavoritos') txtVolver.innerText = 'Volver a Favoritos';
+        else if (origen === 'modalLocalizar') txtVolver.innerText = 'Volver al Mapa';
+        else txtVolver.innerText = 'Volver a los resultados';
+      }
+      closeModal(origen);
+      openModal('modalPerfilReserva');
+      // Cargar cabecera
+      const lat = parseFloat(fisioSeleccionado.latitude || (fisioSeleccionado.clinicas ? fisioSeleccionado.clinicas.latitude : 40.4168));
+      const lng = parseFloat(fisioSeleccionado.longitude || (fisioSeleccionado.clinicas ? fisioSeleccionado.clinicas.longitude : -3.7038));
+      const clinicaNombre = fisioSeleccionado.clinicas ? fisioSeleccionado.clinicas.nombre : 'Centro profesional';
+      const direccionCompleta = fisioSeleccionado.clinicas?.direccion || fisioSeleccionado.direccion || 'Dirección de centro registrada';
+      document.getElementById('perfilFisioHeader').innerHTML = `
+        <div class="perfil-fisio-avatar">
+          ${fisioSeleccionado.foto_perfil_url ? `<img src="${fisioSeleccionado.foto_perfil_url}" alt="${fisioSeleccionado.nombre}">` : (fisioSeleccionado.nombre ? fisioSeleccionado.nombre.charAt(0).toUpperCase() : 'F')}
+        </div>
+        <div class="perfil-fisio-info" style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="perfil-fisio-nombre">
+              ${fisioSeleccionado.nombre}
+              <i class="fa-solid fa-circle-check" style="color: var(--primary); font-size: 16px;" title="Verificado FysiumApp"></i>
+            </div>
+            <button id="btnToggleFavPerfil" class="btn-fav-perfil" onclick="toggleFavoritoPerfil('${fisioSeleccionado.user_id}')" title="Añadir a favoritos">
+              <i class="fa-regular fa-heart"></i>
+            </button>
+          </div>
+          <div class="perfil-fisio-especialidad">${fisioSeleccionado.especialidad || 'Fisioterapia General'}</div>
+          <div class="perfil-fisio-clinica">
+            <i class="fa-solid fa-house-medical"></i> ${clinicaNombre}
+          </div>
+        </div>
+      `;
+      // Comprobar si ya está en favoritos
+      comprobarEstadoFavoritoPerfil(fisioSeleccionado.user_id);
+      // Textos y enlace a Google Maps
+      document.getElementById('perfilDireccionTexto').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${direccionCompleta}`;
+      document.getElementById('perfilGoogleMapsLink').href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      // Mini Mapa
+      setTimeout(() => {
+        if (!miniMapFisio) {
+          miniMapFisio = L.map('mapaDetalleFisio').setView([lat, lng], 15);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+          }).addTo(miniMapFisio);
+        } else {
+          miniMapFisio.invalidateSize();
+          miniMapFisio.setView([lat, lng], 15);
+        }
+        if (miniMapMarker) miniMapFisio.removeLayer(miniMapMarker);
+        const htmlPuntoFisio = `
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+            <svg width="34" height="42" viewBox="0 0 34 42" fill="none" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));">
+              <path d="M17 0C7.61 0 0 7.61 0 17C0 27.5 17 42 17 42C17 42 34 27.5 34 17C34 7.61 26.39 0 17 0Z" fill="#2D5D5D"/>
+              <circle cx="17" cy="16" r="11" fill="white"/>
+              <circle cx="17" cy="13" r="3" fill="#2D5D5D"/>
+              <path d="M11.5 21C11.5 18 14 17 17 17C20 17 22.5 18 22.5 21" stroke="#2D5D5D" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <div style="position: absolute; bottom: -5px; width: 16px; height: 16px; background: rgba(45, 93, 93, 0.35); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <div style="width: 8px; height: 8px; background: #2D5D5D; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 6px rgba(0,0,0,0.5);"></div>
+            </div>
+          </div>
+        `;
+        const customIcon = L.divIcon({
+          className: '',
+          html: htmlPuntoFisio,
+          iconSize: [34, 46],
+          iconAnchor: [17, 42],
+          popupAnchor: [0, -44]
+        });
+        miniMapMarker = L.marker([lat, lng], { icon: customIcon }).addTo(miniMapFisio);
+        miniMapMarker.bindPopup(`
+          <div style="text-align: center; font-family: Inter, sans-serif; padding: 2px 4px;">
+            <b style="color: #1E293B; font-size: 13.5px;">${fisioSeleccionado.nombre}</b><br>
+            <span style="color: #64748B; font-size: 12px;">${clinicaNombre}</span>
+          </div>
+        `).openPopup();
+      }, 200);
+      // Cargar todas las citas y generar el calendario mensual
+      await cargarDisponibilidadCompletaFisio(fisioId, horaPreseleccionada);
+    }
+    // 3. CARGAR DISPONIBILIDAD Y GENERAR CALENDARIO
+    async function cargarDisponibilidadCompletaFisio(fisioId, horaPreseleccionada = null) {
+      const ahora = new Date();
+      const hoyISO = ahora.toISOString().split('T')[0];
+      const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+      mapaCitasLibresFisio = {};
+      const barra = document.getElementById('barraConfirmarReserva');
+      if (barra) barra.style.display = 'none';
+      try {
+        const { data: huecos, error } = await supabaseClient
+          .from('horarios_disponibles')
+          .select('*')
+          .eq('fisio_id', fisioId)
+          .eq('estado', 'libre')
+          .gte('dia', hoyISO)
+          .order('dia', { ascending: true });
+        if (error) throw error;
+        // 1. Descartar horas que ya pasaron si el día es hoy
+        const huecosValidos = (huecos || []).filter(h => {
+          if (h.dia === hoyISO) {
+            const [hh, mm] = (h.hora || '').split(':').map(Number);
+            const minCita = (hh || 0) * 60 + (mm || 0);
+            return minCita > minutosAhora;
+          }
+          return true;
+        });
+        // 2. Ordenar numéricamente por hora (9:00 antes de 11:00)
+        huecosValidos.sort((a, b) => {
+          if (a.dia !== b.dia) return a.dia.localeCompare(b.dia);
+          const [hA, mA] = (a.hora || '').split(':').map(Number);
+          const [hB, mB] = (b.hora || '').split(':').map(Number);
+          return ((hA || 0) * 60 + (mA || 0)) - ((hB || 0) * 60 + (mB || 0));
+        });
+        // 3. Agrupar por día
+        huecosValidos.forEach(h => {
+          if (!mapaCitasLibresFisio[h.dia]) mapaCitasLibresFisio[h.dia] = [];
+          mapaCitasLibresFisio[h.dia].push(h);
+        });
+        const diasConCitas = Object.keys(mapaCitasLibresFisio);
+        // Si hoy aún tiene citas libres en el futuro, empezamos en hoy. Si no, ¡saltamos al primer día libre!
+        if (mapaCitasLibresFisio[hoyISO] && mapaCitasLibresFisio[hoyISO].length > 0) {
+          fechaReservaActual = hoyISO;
+        } else if (diasConCitas.length > 0) {
+          fechaReservaActual = diasConCitas[0];
+        } else {
+          fechaReservaActual = hoyISO;
+        }
+        mesCalendarioActual = new Date(fechaReservaActual + 'T00:00:00');
+        renderizarMesCalendario();
+        mostrarHorasDelDiaSeleccionado(horaPreseleccionada);
+      } catch (err) {
+        console.error("Error al cargar disponibilidad:", err);
+      }
+    }
+
+    // 4. RENDERIZAR CUADRÍCULA DEL MES
+    function renderizarMesCalendario() {
+      const contenedorGrid = document.getElementById('calDiasGrid');
+      const tituloMes = document.getElementById('calMesTitulo');
+      if (!contenedorGrid || !tituloMes) return;
+      const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+      const anio = mesCalendarioActual.getFullYear();
+      const mes = mesCalendarioActual.getMonth();
+      tituloMes.innerText = `${meses[mes]} ${anio}`;
+      const primerDia = new Date(anio, mes, 1);
+      let offsetLunes = (primerDia.getDay() + 6) % 7;
+      const ultimoDiaMes = new Date(anio, mes + 1, 0).getDate();
+      const hoyISO = new Date().toISOString().split('T')[0];
+      let html = '';
+      for (let i = 0; i < offsetLunes; i++) {
+        html += '<div class="cal-dia-celda vacio"></div>';
+      }
+      for (let diaNum = 1; diaNum <= ultimoDiaMes; diaNum++) {
+        const diaStr = String(diaNum).padStart(2, '0');
+        const mesStr = String(mes + 1).padStart(2, '0');
+        const fechaCeldaISO = `${anio}-${mesStr}-${diaStr}`;
+        const esPasado = fechaCeldaISO < hoyISO;
+        const tieneCitas = Boolean(mapaCitasLibresFisio[fechaCeldaISO] && mapaCitasLibresFisio[fechaCeldaISO].length > 0);
+        const esSeleccionado = (fechaCeldaISO === fechaReservaActual);
+        let clases = 'cal-dia-celda';
+        if (esPasado) clases += ' pasado';
+        if (tieneCitas) clases += ' con-citas';
+        if (esSeleccionado) clases += ' seleccionado';
+        const clickAttr = (!esPasado) ? `onclick="seleccionarDiaCalendario('${fechaCeldaISO}')"` : '';
+        html += `
+          <div class="${clases}" ${clickAttr} title="${tieneCitas ? `${mapaCitasLibresFisio[fechaCeldaISO].length} citas libres` : ''}">
+            ${diaNum}
+          </div>
+        `;
+      }
+      contenedorGrid.innerHTML = html;
+    }
+    function cambiarMesCalendario(delta) {
+      mesCalendarioActual.setMonth(mesCalendarioActual.getMonth() + delta);
+      renderizarMesCalendario();
+    }
+    function seleccionarDiaCalendario(fechaISO) {
+      fechaReservaActual = fechaISO;
+      renderizarMesCalendario();
+      mostrarHorasDelDiaSeleccionado();
+    }
+    function mostrarHorasDelDiaSeleccionado(horaPreseleccionada = null) {
+      const contenedor = document.getElementById('contenedorHorasReserva');
+      const labelFecha = document.getElementById('labelFechaSeleccionadaTexto');
+      const barra = document.getElementById('barraConfirmarReserva');
+      if (barra) barra.style.display = 'none';
+      slotSeleccionado = null;
+      const partes = fechaReservaActual.split('-');
+      if (labelFecha) labelFecha.innerText = `${partes[2]}/${partes[1]}/${partes[0]}`;
+      const huecosDia = mapaCitasLibresFisio[fechaReservaActual] || [];
+      if (huecosDia.length === 0) {
+        contenedor.innerHTML = `
+          <div style="grid-column: 1/-1; text-align:center; padding:18px; color:#64748B;">
+            <i class="fa-regular fa-calendar-xmark" style="font-size:26px; color:#CBD5E1; margin-bottom:6px; display:block;"></i>
+            <span style="font-size:13.5px; font-weight:600;">No hay horas libres para este día.</span>
+            <p style="font-size:12px; margin-top:2px;">Elige un día con punto verde en el calendario de arriba.</p>
+          </div>
+        `;
+        return;
+      }
+      contenedor.innerHTML = huecosDia.map(h => {
+        const esActiva = horaPreseleccionada && h.hora === horaPreseleccionada;
+        if (esActiva) slotSeleccionado = h;
+        return `
+          <button class="btn-hora-reserva ${esActiva ? 'activa' : ''}" id="slotBtn_${h.id}" onclick="seleccionarSlotReserva('${h.id}', '${h.hora}')">
+            ${h.hora}
+          </button>
+        `;
+      }).join('');
+      if (slotSeleccionado && barra) {
+        barra.style.display = 'flex';
+        document.getElementById('textoResumenSlot').innerText = `${partes[2]}/${partes[1]} a las ${slotSeleccionado.hora} con ${fisioSeleccionado.nombre}`;
+      }
+    }
+    function seleccionarSlotReserva(slotId, hora) {
+      document.querySelectorAll('.btn-hora-reserva').forEach(b => b.classList.remove('activa'));
+      const btn = document.getElementById(`slotBtn_${slotId}`);
+      if (btn) btn.classList.add('activa');
+      slotSeleccionado = { id: slotId, hora: hora };
+      const barra = document.getElementById('barraConfirmarReserva');
+      barra.style.display = 'flex';
+      const partes = fechaReservaActual.split('-');
+      document.getElementById('textoResumenSlot').innerText = `${partes[2]}/${partes[1]}/${partes[0]} a las ${hora} con ${fisioSeleccionado.nombre}`;
+    }
+
+    async function confirmarReservaFinal() {
+      if (!slotSeleccionado || !fisioSeleccionado) return;
+
+      const btn = document.getElementById('btnConfirmarReserva');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Confirmando...';
+
+      try {
+        const { error } = await supabaseClient
+          .from('horarios_disponibles')
+          .update({
+            estado: 'reservado',
+            nombre_paciente: currentUserProfile?.username || 'Paciente',
+            cliente_id: (await supabaseClient.auth.getSession()).data.session?.user?.id || null
+          })
+          .eq('id', slotSeleccionado.id);
+
+        if (error) throw error;
+
+        // Actualizar la vista de sesión activa en la pantalla principal
+        cargarProximasSesiones();
+
+        alert(`¡Sesión reservada con éxito!\n\nProfesional: ${fisioSeleccionado.nombre}\nFecha: ${fechaReservaActual}\nHora: ${slotSeleccionado.hora}`);
+        closeModal('modalPerfilReserva');
+
+      } catch (err) {
+        console.error("Error al reservar:", err);
+        alert("No se pudo completar la reserva: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Reservar Cita';
+      }
+    }
+
+    // ==========================================
+    // CARGAR FAVORITOS REALES DE SUPABASE
+    // ==========================================
+    async function cargarFavoritos() {
+      const contenedor = document.getElementById('contenedorListaFavoritos');
+      const countLabel = document.getElementById('favsCountLabel');
+      if (!contenedor) return;
+
+      contenedor.innerHTML = `
+        <div style="text-align: center; padding: 35px 20px; color: #64748B;">
+          <i class="fa-solid fa-spinner fa-spin" style="font-size: 26px; color: var(--primary);"></i>
+          <p style="margin-top: 10px; font-size: 13.5px; font-weight: 500;">Cargando tus profesionales favoritos...</p>
+        </div>
+      `;
+
+      try {
+        // 1. Obtener el usuario autenticado actual
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        let user = session?.user;
+
+        if (!user) {
+          const { data: userData } = await supabaseClient.auth.getUser();
+          user = userData?.user;
+        }
+
+        if (!user) {
+          if (countLabel) countLabel.innerText = '';
+          contenedor.innerHTML = `
+            <div style="text-align: center; padding: 30px 15px; color: #64748B;">
+              <div style="width: 56px; height: 56px; background: #FEF2F2; color: #EF4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto; font-size: 24px;">
+                <i class="fa-solid fa-user-lock"></i>
+              </div>
+              <h4 style="font-size: 16px; font-weight: 700; color: #1E293B; margin-bottom: 6px;">Identificación requerida</h4>
+              <p style="font-size: 13.5px; line-height: 1.5; max-width: 360px; margin: 0 auto 16px auto;">
+                Para ver tus profesionales favoritos sincronizados con la app, debes iniciar sesión con tu cuenta.
+              </p>
+              <a href="login.html" style="display: inline-block; background: var(--primary); color: white; text-decoration: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 13.5px;">
+                Iniciar Sesión
+              </a>
+            </div>
+          `;
+          return;
+        }
+
+        // 2. Consultar la tabla favoritos de Supabase
+        const { data: favs, error: errFavs } = await supabaseClient
+          .from('favoritos')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (errFavs) throw errFavs;
+
+        if (!favs || favs.length === 0) {
+          if (countLabel) countLabel.innerText = '0 guardados';
+          contenedor.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #64748B;">
+              <div style="width: 64px; height: 64px; border: 2px dashed #CBD5E1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto; color: #94A3B8; font-size: 26px;">
+                <i class="fa-regular fa-heart"></i>
+              </div>
+              <h4 style="font-size: 16px; font-weight: 700; color: #1E293B; margin-bottom: 6px;">Aún no tienes favoritos</h4>
+              <p style="font-size: 13px; line-height: 1.5; max-width: 340px; margin: 0 auto 18px auto;">
+                Guarda tus fisioterapeutas favoritos para tenerlos siempre a mano y consultar sus huecos libres.
+              </p>
+              <button onclick="closeModal('modalFavoritos'); openModal('modalBuscar');" style="background: #F1F5F9; border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                <i class="fa-solid fa-magnifying-glass"></i> Buscar profesionales
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        if (countLabel) countLabel.innerText = `${favs.length} profesional${favs.length > 1 ? 'es' : ''}`;
+
+        // 3. Obtener los detalles de los fisios favoritos
+        const fisioIds = favs.map(f => f.fisio_id).filter(Boolean);
+        const { data: fisios, error: errFisios } = await supabaseClient
+          .from('fisios')
+          .select('*, clinicas(nombre, direccion, latitude, longitude)')
+          .in('user_id', fisioIds);
+
+        if (errFisios) throw errFisios;
+
+        // Añadirlos a la caché para que el modal de reserva los reconozca al instante
+        (fisios || []).forEach(f => {
+          if (!todosFisiosCache.some(c => c.user_id === f.user_id)) {
+            todosFisiosCache.push(f);
+          }
+        });
+
+        // 4. Renderizar tarjetas de los profesionales favoritos
+        contenedor.innerHTML = (fisios || []).map(f => {
+          const clinicaNombre = f.clinicas?.nombre || 'Centro profesional';
+          const direccion = f.clinicas?.direccion || f.direccion || 'Dirección registrada';
+          const nombreEscapado = (f.nombre || '').replace(/'/g, "\\'");
+
+          return `
+            <div class="favorito-card-clean">
+              <div class="favorito-card-left" onclick="closeModal('modalFavoritos'); abrirPerfilReservaFisio('${f.user_id}', null, 'modalFavoritos');" style="cursor: pointer;">
+                <div class="favorito-avatar-clean">
+                  ${f.foto_perfil_url ? `<img src="${f.foto_perfil_url}" alt="${f.nombre}">` : (f.nombre ? f.nombre.charAt(0).toUpperCase() : 'F')}
+                </div>
+                <div class="favorito-info-clean">
+                  <div class="favorito-nombre-row">
+                    <span class="favorito-nombre">${f.nombre}</span>
+                    <span class="favorito-badge-esp">${f.especialidad || 'Fisioterapia'}</span>
+                  </div>
+                  <div class="favorito-clinica">
+                    <i class="fa-solid fa-house-medical"></i> ${clinicaNombre}
+                  </div>
+                  <div class="favorito-direccion">
+                    <i class="fa-solid fa-location-dot"></i> ${direccion}
+                  </div>
+                </div>
+              </div>
+
+              <div class="favorito-card-actions">
+                <button class="btn-reservar-fav" onclick="closeModal('modalFavoritos'); abrirPerfilReservaFisio('${f.user_id}', null, 'modalFavoritos');" title="Ver calendario y reservar">
+                  <i class="fa-regular fa-calendar-check"></i> Reservar
+                </button>
+                <button class="btn-eliminar-fav" onclick="eliminarDeFavoritos('${f.user_id}', '${nombreEscapado}')" title="Quitar de favoritos">
+                  <i class="fa-solid fa-heart" style="color: #EF4444;"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error("Error al cargar favoritos:", err);
+        contenedor.innerHTML = `<div style="text-align:center; padding:20px; color:var(--danger); font-size:13px;">Error al conectar con Supabase: ${err.message}</div>`;
+      }
+    }
+
+    // ==========================================
+    // QUITAR DE FAVORITOS
+    // ==========================================
+    async function eliminarDeFavoritos(fisioId, nombreFisio) {
+      if (!confirm(`¿Deseas quitar a ${nombreFisio} de tus favoritos?`)) return;
+
+      try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return alert("Debes iniciar sesión para modificar tus favoritos.");
+
+        const { error } = await supabaseClient
+          .from('favoritos')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('fisio_id', fisioId);
+
+        if (error) throw error;
+
+        // Recargar la lista tras borrar
+        cargarFavoritos();
+      } catch (err) {
+        console.error("Error al eliminar favorito:", err);
+        alert("No se pudo eliminar de favoritos: " + err.message);
+      }
+    }
+
+    let currentUserProfile = null;
+
+    // ==========================================
+    // DETECTAR USUARIO REAL Y CARGAR SUS DATOS
+    // ==========================================
+    async function inicializarUsuarioReal() {
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || !session.user) {
+          console.warn("No hay sesión activa de Supabase. Redirigiendo al login...");
+          window.location.href = 'login.html';
+          return;
+        }
+        const user = session.user;
+
+        // Comprobar rol: si es profesional o clínica, redirigir a su panel
+        const { data: perfilRol } = await supabaseClient
+          .from('gestion_perfil')
+          .select('rol')
+          .eq('user_id', user.id)
+          .single();
+        if (perfilRol && (perfilRol.rol === 'fisio' || perfilRol.rol === 'clinica')) {
+          window.location.href = 'dashboard.html';
+          return;
+        }
+        // Consultar los datos del usuario en auth_user
+        const { data: perfil } = await supabaseClient
+          .from('auth_user')
+          .select('username, foto_perfil_url, email')
+          .eq('id_supabase', user.id)
+          .single();
+        currentUserProfile = perfil || {};
+        currentUserProfile.email = perfil?.email || user.email;
+        const nombreCompleto = perfil?.username || (user.email ? user.email.split('@')[0] : 'Usuario');
+        const primerNombre = nombreCompleto.trim().split(' ')[0] || nombreCompleto;
+        const inicial = primerNombre.charAt(0).toUpperCase();
+        const fotoUrl = perfil?.foto_perfil_url;
+        const htmlAvatar = fotoUrl
+          ? `<img src="${fotoUrl}" alt="${primerNombre}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+          : inicial;
+        // 1. Saludo grande en cabecera
+        const greetingH1 = document.getElementById('topbarGreeting');
+        if (greetingH1) greetingH1.innerText = `¡Hola, ${primerNombre}! `;
+        // 2. Pastilla de usuario superior derecha
+        const topName = document.getElementById('topbarUserName');
+        if (topName) topName.innerText = nombreCompleto;
+        const topAvatar = document.getElementById('topbarUserAvatar');
+        if (topAvatar) topAvatar.innerHTML = htmlAvatar;
+        // 3. Menú lateral (abajo a la izquierda)
+        const sideName = document.getElementById('sidebarUserName');
+        if (sideName) sideName.innerText = nombreCompleto;
+        const sideAvatar = document.getElementById('sidebarUserAvatar');
+        if (sideAvatar) sideAvatar.innerHTML = htmlAvatar;
+        // 4. Modal "Mi Perfil"
+        const modName = document.getElementById('modalPerfilName');
+        if (modName) modName.innerText = nombreCompleto;
+        const modEmail = document.getElementById('modalPerfilEmail');
+        if (modEmail) modEmail.innerText = `${currentUserProfile.email} · Paciente FysiumApp`;
+        const modAvatar = document.getElementById('modalPerfilAvatar');
+        if (modAvatar) modAvatar.innerHTML = htmlAvatar;
+      } catch (err) {
+        console.warn("Aviso al cargar perfil del usuario:", err);
+      }
+    }
+
+    // ==========================================
+    // CARGAR PRÓXIMAS SESIONES REALES DE SUPABASE
+    // ==========================================
+    async function cargarProximasSesiones() {
+      const contenedor = document.getElementById('contenedorProximasSesiones');
+      if (!contenedor) return;
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || !session.user) {
+          contenedor.innerHTML = `
+            <div class="empty-state-card">
+              <p class="empty-state-text">Inicia sesión para ver tus citas programadas.</p>
+            </div>
+          `;
+          return;
+        }
+        const hoyISO = new Date().toISOString().split('T')[0];
+        // Consultar citas reservadas a partir de hoy
+        const { data: citas, error } = await supabaseClient
+          .from('horarios_disponibles')
+          .select('id, dia, hora, hora_fin, precio, estado, cliente_id, motivo, fisio_id')
+          .eq('cliente_id', session.user.id)
+          .eq('estado', 'reservado')
+          .gte('dia', hoyISO)
+          .order('dia', { ascending: true })
+          .order('hora', { ascending: true });
+        if (error) throw error;
+        if (!citas || citas.length === 0) {
+          contenedor.innerHTML = `
+            <div class="empty-state-card">
+              <p class="empty-state-text">No tienes sesiones próximas.</p>
+              <button class="btn-buscar-sesion-empty" onclick="openModal('modalBuscar')">
+                <i class="fa-solid fa-magnifying-glass"></i> Buscar Profesional
+              </button>
+            </div>
+          `;
+          return;
+        }
+        // Obtener datos de los fisioterapeutas y clínicas
+        const fisioIds = [...new Set(citas.map(c => c.fisio_id).filter(Boolean))];
+        let mapFisios = {};
+        if (fisioIds.length > 0) {
+          const { data: fisiosData } = await supabaseClient
+            .from('fisios')
+            .select(`
+              user_id, nombre, foto_perfil_url, especialidad, direccion,
+              clinicas ( nombre, direccion, latitude, longitude )
+            `)
+            .in('user_id', fisioIds);
+          if (fisiosData) {
+            fisiosData.forEach(f => { mapFisios[f.user_id] = f; });
+          }
+        }
+        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        contenedor.innerHTML = citas.map(cita => {
+          const fisio = mapFisios[cita.fisio_id] || {};
+          const nombreFisio = fisio.nombre || 'Profesional';
+          const clinicaNombre = fisio.clinicas?.nombre || 'Centro profesional';
+          const direccion = fisio.clinicas?.direccion || fisio.direccion || '';
+          const partes = (cita.dia || '').split('-');
+          const diaNum = partes[2] || '--';
+          const mesNum = parseInt(partes[1] || '1', 10) - 1;
+          const mesNombre = meses[mesNum] || '';
+          const mapsQuery = encodeURIComponent(`${clinicaNombre} ${direccion}`);
+          const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+          return `
+            <div class="active-session-card show" style="margin-bottom: 14px;">
+              <div style="display: flex; align-items: center; gap: 18px; flex: 1;">
+                <div class="session-date-badge">
+                  <span class="session-date-day">${diaNum}</span>
+                  <span class="session-date-month">${mesNombre}</span>
+                </div>
+                <div>
+                  <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 4px;">
+                    Próxima Sesión con ${nombreFisio}
+                  </h3>
+                  <p style="font-size: 13.5px; opacity: 0.9; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span><i class="fa-regular fa-clock"></i> ${cita.hora}</span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-house-medical"></i> ${clinicaNombre}</span>
+                    ${direccion ? `<span style="opacity: 0.8; font-size: 12.5px;">(${direccion})</span>` : ''}
+                  </p>
+                </div>
+              </div>
+              <div class="session-card-actions-row">
+                <a href="${gmapsUrl}" target="_blank" class="btn-session-action btn-session-route" title="Cómo llegar con Google Maps">
+                  <i class="fa-solid fa-diamond-turn-right"></i> Cómo llegar
+                </a>
+                <button class="btn-session-action btn-session-cancel" onclick="cancelarCitaCliente('${cita.id}', '${nombreFisio}', '${cita.dia}', '${cita.hora}')" title="Cancelar esta cita">
+                  <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error("Error al cargar próximas sesiones:", err);
+        contenedor.innerHTML = `
+          <div class="empty-state-card" style="border-color: #FECACA; background: #FEF2F2;">
+            <p class="empty-state-text" style="color: var(--danger);">Error al consultar tus sesiones: ${err.message}</p>
+          </div>
+        `;
+      }
+    }
+    // ==========================================
+    // CANCELAR CITA DEL CLIENTE
+    // ==========================================
+    async function cancelarCitaCliente(slotId, nombreFisio, dia, hora) {
+      const partes = dia.split('-');
+      const fechaBonita = `${partes[2]}/${partes[1]}/${partes[0]}`;
+      if (!confirm(`¿Estás seguro de que deseas cancelar tu cita con ${nombreFisio} el ${fechaBonita} a las ${hora}?`)) {
+        return;
+      }
+      try {
+        const { error } = await supabaseClient
+          .from('horarios_disponibles')
+          .update({
+            estado: 'libre',
+            cliente_id: null,
+            nombre_paciente: null,
+            motivo: null
+          })
+          .eq('id', slotId);
+        if (error) throw error;
+        alert("Cita cancelada con éxito. El horario ha quedado liberado.");
+        cargarProximasSesiones();
+      } catch (err) {
+        console.error("Error al cancelar la cita:", err);
+        alert("No se pudo cancelar la cita: " + err.message);
+      }
+    }
+    // ==========================================
+    // PESTAÑAS DEL MODAL HISTORIAL
+    // ==========================================
+    function cambiarPestanaHistorial(pestana) {
+      const tabPautas = document.getElementById('tabBtnPautas');
+      const tabCitas = document.getElementById('tabBtnCitas');
+      const listaPautas = document.getElementById('historialPautasLista');
+      const listaCitas = document.getElementById('historialCitasLista');
+      if (pestana === 'pautas') {
+        tabPautas.classList.add('active');
+        tabCitas.classList.remove('active');
+        listaPautas.style.display = 'flex';
+        listaCitas.style.display = 'none';
+      } else {
+        tabCitas.classList.add('active');
+        tabPautas.classList.remove('active');
+        listaCitas.style.display = 'flex';
+        listaPautas.style.display = 'none';
+      }
+    }
+    // ==========================================
+    // CARGAR REGISTRO DE SESIONES Y PAUTAS REALES
+    // ==========================================
+    async function cargarRegistroSesiones() {
+      const pautasContainer = document.getElementById('historialPautasLista');
+      const citasContainer = document.getElementById('historialCitasLista');
+      if (!pautasContainer || !citasContainer) return;
+      pautasContainer.innerHTML = '<div style="text-align:center; padding:24px; color:#64748B;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando pautas...</div>';
+      citasContainer.innerHTML = '<div style="text-align:center; padding:24px; color:#64748B;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando citas...</div>';
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || !session.user) {
+          pautasContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#64748B;">Inicia sesión para ver tu historial.</div>';
+          citasContainer.innerHTML = '';
+          return;
+        }
+        const userId = session.user.id;
+        const hoyISO = new Date().toISOString().split('T')[0];
+        // 1. Consultar pautas (historial_seguimiento y planes_recuperacion)
+        const { data: histData } = await supabaseClient
+          .from('historial_seguimiento')
+          .select('*')
+          .eq('cliente_id', userId)
+          .order('fecha', { ascending: false });
+        const { data: planData } = await supabaseClient
+          .from('planes_recuperacion')
+          .select('*')
+          .eq('cliente_id', userId);
+        // 2. Consultar citas pasadas de horarios_disponibles
+        const { data: citasPasadas } = await supabaseClient
+          .from('horarios_disponibles')
+          .select('*')
+          .eq('cliente_id', userId)
+          .lt('dia', hoyISO)
+          .order('dia', { ascending: false })
+          .order('hora', { ascending: false });
+        // 3. Obtener nombres de fisios
+        const fisioIds = new Set();
+        if (histData) histData.forEach(h => h.fisio_id && fisioIds.add(h.fisio_id));
+        if (planData) planData.forEach(p => p.fisio_id && fisioIds.add(p.fisio_id));
+        if (citasPasadas) citasPasadas.forEach(c => c.fisio_id && fisioIds.add(c.fisio_id));
+        let mapFisios = {};
+        if (fisioIds.size > 0) {
+          const { data: fisios } = await supabaseClient
+            .from('fisios')
+            .select('user_id, nombre, clinicas(nombre)')
+            .in('user_id', Array.from(fisioIds));
+          if (fisios) {
+            fisios.forEach(f => { mapFisios[f.user_id] = f; });
+          }
+        }
+        // Renderizar Pautas
+        const listadoPautas = [];
+        if (planData && planData.length > 0) {
+          planData.forEach(p => {
+            if (p.reposo || p.ejercicios) {
+              listadoPautas.push({
+                tipo: 'plan',
+                fecha: p.updated_at ? p.updated_at.split('T')[0] : 'Actual',
+                fisio_id: p.fisio_id,
+                reposo: p.reposo,
+                ejercicios: p.ejercicios
+              });
+            }
+          });
+        }
+        if (histData && histData.length > 0) {
+          histData.forEach(h => {
+            listadoPautas.push({
+              tipo: 'seguimiento',
+              fecha: h.fecha ? h.fecha.split('T')[0] : 'Sesión',
+              fisio_id: h.fisio_id,
+              reposo: h.reposo,
+              ejercicios: h.ejercicios
+            });
+          });
+        }
+        if (listadoPautas.length === 0) {
+          pautasContainer.innerHTML = `
+            <div class="empty-state-clean">
+              <i class="fa-regular fa-clipboard" style="font-size:32px; color:#CBD5E1; margin-bottom:8px;"></i>
+              <p style="font-weight:600; color:#475569; font-size:14px;">No tienes pautas o ejercicios asignados aún.</p>
+              <span style="font-size:12.5px; color:#94A3B8;">Tu fisioterapeuta registrará aquí tus ejercicios y recomendaciones tras tus sesiones.</span>
+            </div>
+          `;
+        } else {
+          pautasContainer.innerHTML = listadoPautas.map(item => {
+            const fisio = mapFisios[item.fisio_id] || {};
+            const nombreFisio = fisio.nombre || 'Tu fisioterapeuta';
+            const fechaFormateada = item.fecha !== 'Actual' ? item.fecha.split('-').reverse().join('/') : 'Plan actual';
+            let ejerciciosPills = '';
+            if (item.ejercicios) {
+              try {
+                const arr = typeof item.ejercicios === 'string' ? JSON.parse(item.ejercicios) : item.ejercicios;
+                if (Array.isArray(arr) && arr.length > 0) {
+                  ejerciciosPills = arr.map(e => {
+                    const nombreEj = typeof e === 'string' ? e : (e.nombre || 'Ejercicio');
+                    const icono = (typeof e === 'object' && e.icono) ? e.icono.replace('md-', 'fa-') : 'fa-dumbbell';
+                    return `<span class="pauta-ejercicio-tag"><i class="fa-solid ${icono}"></i> ${nombreEj}</span>`;
+                  }).join('');
+                }
+              } catch (e) { }
+            }
+            return `
+              <div class="pauta-card">
+                <div class="pauta-card-header">
+                  <div>
+                    <span class="pauta-badge-tipo">${item.tipo === 'plan' ? 'Plan Activo' : 'Sesión Realizada'}</span>
+                    <strong style="color: var(--primary); font-size: 14.5px; margin-left: 6px;">${nombreFisio}</strong>
+                  </div>
+                  <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">
+                    <i class="fa-regular fa-calendar"></i> ${fechaFormateada}
+                  </span>
+                </div>
+                ${item.reposo ? `
+                  <div class="pauta-reposo-box">
+                    <i class="fa-solid fa-quote-left" style="color: var(--secondary); margin-right: 6px;"></i>
+                    <span>${item.reposo}</span>
+                  </div>
+                ` : ''}
+                ${ejerciciosPills ? `
+                  <div style="margin-top: 10px;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 6px;">
+                      Ejercicios prescritos:
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                      ${ejerciciosPills}
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('');
+        }
+        // Renderizar Citas Pasadas
+        if (!citasPasadas || citasPasadas.length === 0) {
+          citasContainer.innerHTML = `
+            <div class="empty-state-clean">
+              <i class="fa-regular fa-calendar-check" style="font-size:32px; color:#CBD5E1; margin-bottom:8px;"></i>
+              <p style="font-weight:600; color:#475569; font-size:14px;">No tienes citas pasadas registradas.</p>
+              <span style="font-size:12.5px; color:#94A3B8;">Cuando acudas a tus citas, quedarán archivadas aquí.</span>
+            </div>
+          `;
+        } else {
+          citasContainer.innerHTML = citasPasadas.map(c => {
+            const fisio = mapFisios[c.fisio_id] || {};
+            const nombreFisio = fisio.nombre || 'Profesional';
+            const clinica = fisio.clinicas?.nombre || 'Centro';
+            const fechaFormateada = c.dia.split('-').reverse().join('/');
+            return `
+              <div class="cita-pasada-card">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <div class="cita-pasada-icono">
+                    <i class="fa-solid fa-check"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size: 14.5px; font-weight: 700; color: var(--text);">${nombreFisio}</h4>
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
+                      <span><i class="fa-regular fa-calendar"></i> ${fechaFormateada}</span> • 
+                      <span><i class="fa-regular fa-clock"></i> ${c.hora}</span> • 
+                      <span><i class="fa-solid fa-house-medical"></i> ${clinica}</span>
+                    </p>
+                  </div>
+                </div>
+                <span class="badge-completada">Completada</span>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error("Error al cargar historial:", err);
+        pautasContainer.innerHTML = `<div style="color:var(--danger); padding:15px; font-size:13px;">Error: ${err.message}</div>`;
+        citasContainer.innerHTML = '';
+      }
+    }
+
+    // ==========================================
+    // LÓGICA DE MI PERFIL (SINCRONIZADA CON LA APP)
+    // ==========================================
+    let fotoPerfilTemporal = null;
+    // Formatear automáticamente la fecha en DD/MM/AAAA mientras se teclea
+    function formatearFechaInput(input) {
+      let v = input.value.replace(/\D/g, '');
+      let r = '';
+      if (v.length > 0) {
+        let dia = v.substring(0, 2);
+        if (parseInt(dia, 10) > 31) dia = '31';
+        r = dia;
+      }
+      if (v.length >= 3) {
+        let mes = v.substring(2, 4);
+        if (parseInt(mes, 10) > 12) mes = '12';
+        r += '/' + mes;
+      }
+      if (v.length >= 5) {
+        r += '/' + v.substring(4, 8);
+      }
+      input.value = r;
+    }
+    // Cargar los datos del usuario en los campos del modal
+    async function cargarDatosPerfilModal() {
+      fotoPerfilTemporal = null;
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || !session.user) return;
+        const user = session.user;
+        const meta = user.user_metadata || {};
+        const { data: perfilAuth } = await supabaseClient
+          .from('auth_user')
+          .select('*')
+          .eq('id_supabase', user.id)
+          .single();
+        const nombre = perfilAuth?.username || meta.full_name || (user.email ? user.email.split('@')[0] : '');
+        const email = perfilAuth?.email || user.email || '';
+        const telefono = perfilAuth?.telefono || meta.telefono || '';
+        const fechaNac = meta.fecha_nacimiento || '';
+        const notas = meta.historial_lesiones || '';
+        const foto = perfilAuth?.foto_perfil_url || meta.avatar_url || null;
+        document.getElementById('perfilInputNombre').value = nombre;
+        document.getElementById('perfilInputEmail').value = email;
+        document.getElementById('perfilInputTelefono').value = telefono;
+        document.getElementById('perfilInputFechaNac').value = fechaNac;
+        document.getElementById('perfilInputNotas').value = notas;
+        document.getElementById('perfilInputPassword').value = '';
+        actualizarAvatarPreview(foto, nombre);
+      } catch (err) {
+        console.error("Error al cargar datos en modal perfil:", err);
+      }
+    }
+    function actualizarAvatarPreview(fotoUrl, nombre) {
+      const preview = document.getElementById('perfilAvatarPreview');
+      if (!preview) return;
+      if (fotoUrl) {
+        preview.innerHTML = `<img src="${fotoUrl}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      } else {
+        const inicial = nombre ? nombre.trim().charAt(0).toUpperCase() : 'U';
+        preview.innerHTML = `<span id="perfilAvatarInicial">${inicial}</span>`;
+      }
+    }
+    // Selección de nueva foto desde el equipo
+    function manejarSeleccionFotoPerfil(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        alert("La imagen no debe superar los 5MB.");
+        return;
+      }
+      fotoPerfilTemporal = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const preview = document.getElementById('perfilAvatarPreview');
+        if (preview) {
+          preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    // Guardar los cambios en Supabase Auth y auth_user
+    async function guardarPerfilCliente(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btnGuardarPerfil');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || !session.user) throw new Error("No hay sesión activa.");
+        const user = session.user;
+        const nombre = document.getElementById('perfilInputNombre').value.trim();
+        const telefono = document.getElementById('perfilInputTelefono').value.trim();
+        const fechaNac = document.getElementById('perfilInputFechaNac').value.trim();
+        const notas = document.getElementById('perfilInputNotas').value.trim();
+        const nuevaPwd = document.getElementById('perfilInputPassword').value.trim();
+        let nuevaFotoUrl = currentUserProfile?.foto_perfil_url || user.user_metadata?.avatar_url || null;
+        // Subir imagen a storage si se ha seleccionado una nueva
+        if (fotoPerfilTemporal) {
+          const ext = fotoPerfilTemporal.name.split('.').pop();
+          const filePath = `${user.id}_avatar_${Date.now()}.${ext}`;
+          const { error: upErr } = await supabaseClient.storage
+            .from('fotos-clinicas')
+            .upload(filePath, fotoPerfilTemporal, { upsert: true });
+          if (!upErr) {
+            const { data: pubData } = supabaseClient.storage
+              .from('fotos-clinicas')
+              .getPublicUrl(filePath);
+            nuevaFotoUrl = pubData.publicUrl;
+          } else {
+            console.warn("Aviso al subir imagen:", upErr);
+          }
+        }
+        // 1. Actualizar usuario en Supabase Auth
+        const updateAuthData = {
+          data: {
+            full_name: nombre,
+            telefono: telefono,
+            fecha_nacimiento: fechaNac,
+            historial_lesiones: notas,
+            avatar_url: nuevaFotoUrl
+          }
+        };
+        if (nuevaPwd) {
+          if (nuevaPwd.length < 6) throw new Error("La contraseña debe tener al menos 6 caracteres.");
+          updateAuthData.password = nuevaPwd;
+        }
+        const { error: authErr } = await supabaseClient.auth.updateUser(updateAuthData);
+        if (authErr) throw authErr;
+        // 2. Actualizar en la tabla auth_user
+        const { error: dbErr } = await supabaseClient
+          .from('auth_user')
+          .update({
+            username: nombre,
+            telefono: telefono,
+            foto_perfil_url: nuevaFotoUrl
+          })
+          .eq('id_supabase', user.id);
+        if (dbErr) console.warn("Aviso al actualizar auth_user:", dbErr);
+        alert("¡Perfil actualizado con éxito!");
+        closeModal('modalPerfil');
+        // Refrescar cabeceras y barra lateral
+        inicializarUsuarioReal();
+      } catch (err) {
+        console.error("Error al guardar perfil:", err);
+        alert("No se pudo guardar el perfil: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Guardar Cambios';
+      }
+    }
+
+    // ==========================================
+    // GESTIÓN DE FAVORITOS EN LA FICHA DEL FISIO
+    // ==========================================
+    async function comprobarEstadoFavoritoPerfil(fisioId) {
+      const btn = document.getElementById('btnToggleFavPerfil');
+      if (!btn) return;
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || !session.user) return;
+        const { data } = await supabaseClient
+          .from('favoritos')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .eq('fisio_id', fisioId)
+          .limit(1);
+        const esFav = Boolean(data && data.length > 0);
+        actualizarBotonFavVisual(btn, esFav);
+      } catch (e) {
+        console.warn("Aviso al comprobar favorito:", e);
+      }
+    }
+    function actualizarBotonFavVisual(btn, esFav) {
+      if (esFav) {
+        btn.innerHTML = '<i class="fa-solid fa-heart" style="color: #EF4444;"></i>';
+        btn.classList.add('es-fav');
+        btn.title = 'Quitar de favoritos';
+      } else {
+        btn.innerHTML = '<i class="fa-regular fa-heart" style="color: #64748B;"></i>';
+        btn.classList.remove('es-fav');
+        btn.title = 'Añadir a favoritos';
+      }
+    }
+    async function toggleFavoritoPerfil(fisioId) {
+      const btn = document.getElementById('btnToggleFavPerfil');
+      if (!btn) return;
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || !session.user) return alert("Inicia sesión para guardar favoritos.");
+        const userId = session.user.id;
+        const esFav = btn.classList.contains('es-fav');
+        if (esFav) {
+          await supabaseClient
+            .from('favoritos')
+            .delete()
+            .eq('user_id', userId)
+            .eq('fisio_id', fisioId);
+          actualizarBotonFavVisual(btn, false);
+        } else {
+          await supabaseClient
+            .from('favoritos')
+            .insert([{ user_id: userId, fisio_id: fisioId }]);
+          actualizarBotonFavVisual(btn, true);
+        }
+      } catch (err) {
+        console.error("Error al alternar favorito:", err);
+      }
+    }
+    // ==========================================
+    // NOTIFICACIONES REALES DEL CLIENTE
+    // ==========================================
+    async function cargarNotificaciones() {
+      const contenedor = document.getElementById('contenedorListaNotificaciones');
+      if (!contenedor) return;
+      contenedor.innerHTML = '<div style="text-align:center; padding:20px; color:#64748B;"><i class="fa-solid fa-spinner fa-spin"></i> Comprobando avisos...</div>';
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || !session.user) {
+          contenedor.innerHTML = '<div style="text-align:center; padding:15px; color:#64748B;">Inicia sesión para ver notificaciones.</div>';
+          return;
+        }
+        const hoyISO = new Date().toISOString().split('T')[0];
+        // Consultar citas reservadas próximas
+        const { data: citas } = await supabaseClient
+          .from('horarios_disponibles')
+          .select('id, dia, hora, fisio_id')
+          .eq('cliente_id', session.user.id)
+          .eq('estado', 'reservado')
+          .gte('dia', hoyISO)
+          .order('dia', { ascending: true })
+          .limit(3);
+        const avisos = [];
+        if (citas && citas.length > 0) {
+          // Traer nombres de fisios
+          const fisioIds = [...new Set(citas.map(c => c.fisio_id))];
+          const { data: fisios } = await supabaseClient
+            .from('fisios')
+            .select('user_id, nombre, clinicas(nombre)')
+            .in('user_id', fisioIds);
+          const mapF = {};
+          (fisios || []).forEach(f => mapF[f.user_id] = f);
+          citas.forEach(c => {
+            const f = mapF[c.fisio_id] || {};
+            const fisioNom = f.nombre || 'tu fisioterapeuta';
+            const clinicaNom = f.clinicas?.nombre || 'Consulta';
+            const partes = c.dia.split('-');
+            const fechaBonita = `${partes[2]}/${partes[1]}`;
+            avisos.push({
+              icono: 'fa-regular fa-calendar-check',
+              titulo: `Cita programada para el ${fechaBonita}`,
+              desc: `Tienes sesión con ${fisioNom} a las ${c.hora} (${clinicaNom}).`
+            });
+          });
+        }
+        if (avisos.length === 0) {
+          contenedor.innerHTML = `
+            <div style="text-align:center; padding:32px 16px; color:#64748B;">
+              <i class="fa-regular fa-bell-slash" style="font-size:32px; color:#CBD5E1; margin-bottom:8px; display:block;"></i>
+              <p style="font-weight:600; color:#334155; font-size:14px;">No tienes notificaciones pendientes.</p>
+              <span style="font-size:12.5px; color:#94A3B8;">¡Estás al día! Aquí verás tus recordatorios y confirmaciones.</span>
+            </div>
+          `;
+          return;
+        }
+        contenedor.innerHTML = avisos.map(a => `
+          <div class="notif-card">
+            <div class="notif-icon-box">
+              <i class="${a.icono}"></i>
+            </div>
+            <div style="flex: 1;">
+              <div class="notif-title">${a.titulo}</div>
+              <div class="notif-desc">${a.desc}</div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error("Error al cargar notificaciones:", err);
+        contenedor.innerHTML = '<div style="color:var(--danger); padding:10px; font-size:12px;">No se pudieron cargar las notificaciones.</div>';
+      }
+    }
+  </script>
+</body>
+
+</html>

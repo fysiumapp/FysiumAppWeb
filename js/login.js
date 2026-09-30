@@ -65,13 +65,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 setLoading(false);
                 return;
             }
-            // Detectar si el usuario está navegando desde un teléfono móvil (iPhone, Android, o modo escritorio en móvil)
-            const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) 
+            // Detección de dispositivo
+            const esIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
                 || (navigator.maxTouchPoints > 1 && window.screen.width < 1024)
                 || window.innerWidth < 768;
-            // 1. SI ES CLIENTE -> SIEMPRE A LA WEBAPP
+            // 1. SI ES CLIENTE:
             if (data.rol === 'cliente') {
-                window.location.href = 'app/';
+                // Si es móvil iOS (iPhone/iPad), a la WebApp móvil
+                if (esIos) {
+                    window.location.href = 'app/';
+                } else {
+                    // En PC (o Android en navegador), al Dashboard Web de Cliente
+                    window.location.href = 'dashboard-cliente.html';
+                }
                 return;
             }
             // 2. SI ES PROFESIONAL EN UN TELÉFONO MÓVIL -> A LA WEBAPP MÓVIL (adaptada para móviles)

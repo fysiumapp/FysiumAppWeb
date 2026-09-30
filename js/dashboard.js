@@ -33,6 +33,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rol = perfilData.rol;
     let userData = null;
 
+    if (rol === 'cliente') {
+        window.location.href = 'dashboard-cliente.html';
+        return;
+    }
+
     if (rol === 'clinica') {
         const { data, error } = await supabaseClient.from('clinicas').select('*').eq('user_id', currentUser.id).single();
         if (error || !data) { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; return; }
