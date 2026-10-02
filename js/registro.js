@@ -3,8 +3,11 @@ let currentRole = 'fisio';
 let fisiosClinica = [];
 
 // Elementos DOM
+const btnCliente = document.getElementById('btnRoleCliente');
 const btnFisio = document.getElementById('btnRoleFisio');
 const btnClinica = document.getElementById('btnRoleClinica');
+const registroTitulo = document.getElementById('registroTitulo');
+const registroSubtitulo = document.getElementById('registroSubtitulo');
 const labelNombre = document.getElementById('labelNombre');
 const labelTel1 = document.getElementById('labelTel1');
 const groupTel2 = document.getElementById('groupTel2');
@@ -20,26 +23,50 @@ const submitBtn = document.getElementById('submitBtn');
 // 1. GESTIÓN DE LA INTERFAZ (Roles)
 function setRole(role) {
   currentRole = role;
-  errorBox.style.display = 'none';
-
-  if (role === 'fisio') {
-    btnFisio.classList.add('active');
-    btnClinica.classList.remove('active');
-    labelNombre.textContent = "Nombre Completo";
-    labelTel1.textContent = "Teléfono";
-    inputTel1.required = true;
-    groupTel2.classList.add('hidden');
-    clinicaSection.classList.add('hidden');
+  if (errorBox) errorBox.style.display = 'none';
+  if (btnCliente) btnCliente.classList.remove('active');
+  if (btnFisio) btnFisio.classList.remove('active');
+  if (btnClinica) btnClinica.classList.remove('active');
+  if (role === 'cliente') {
+    if (btnCliente) btnCliente.classList.add('active');
+    if (labelNombre) labelNombre.textContent = "Nombre y Apellidos";
+    if (labelTel1) labelTel1.textContent = "Teléfono Móvil";
+    if (inputTel1) inputTel1.required = true;
+    if (groupTel2) groupTel2.classList.add('hidden');
+    if (clinicaSection) clinicaSection.classList.add('hidden');
+    if (registroTitulo) registroTitulo.textContent = "Crear Cuenta Cliente";
+    if (registroSubtitulo) registroSubtitulo.textContent = "Regístrate para reservar sesiones y ver tus pautas.";
+  } else if (role === 'fisio') {
+    if (btnFisio) btnFisio.classList.add('active');
+    if (labelNombre) labelNombre.textContent = "Nombre y Apellidos";
+    if (labelTel1) labelTel1.textContent = "Teléfono";
+    if (inputTel1) inputTel1.required = true;
+    if (groupTel2) groupTel2.classList.add('hidden');
+    if (clinicaSection) clinicaSection.classList.add('hidden');
+    if (registroTitulo) registroTitulo.textContent = "Crear Cuenta Profesional";
+    if (registroSubtitulo) registroSubtitulo.textContent = "Únete a Fysium y digitaliza tu espacio de trabajo.";
   } else {
-    btnClinica.classList.add('active');
-    btnFisio.classList.remove('active');
-    labelNombre.textContent = "Nombre del Centro";
-    labelTel1.textContent = "Teléfono Fijo (Opcional)";
-    inputTel1.required = false;
-    groupTel2.classList.remove('hidden');
-    clinicaSection.classList.remove('hidden');
+    if (btnClinica) btnClinica.classList.add('active');
+    if (labelNombre) labelNombre.textContent = "Nombre del Centro";
+    if (labelTel1) labelTel1.textContent = "Teléfono Fijo (Opcional)";
+    if (inputTel1) inputTel1.required = false;
+    if (groupTel2) groupTel2.classList.remove('hidden');
+    if (clinicaSection) clinicaSection.classList.remove('hidden');
+    if (registroTitulo) registroTitulo.textContent = "Crear Cuenta Centro";
+    if (registroSubtitulo) registroSubtitulo.textContent = "Gestiona tu centro y tu equipo de profesionales.";
   }
 }
+
+// Activar rol según parámetro ?rol= de la URL
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const rolParam = params.get('rol');
+  if (rolParam === 'cliente' || rolParam === 'clinica' || rolParam === 'fisio') {
+    setRole(rolParam);
+  } else {
+    setRole('fisio');
+  }
+});
 
 // 2. GESTIÓN DEL MODAL DE FISIOS (Para Clínicas)
 function openFisioModal() {
@@ -153,6 +180,25 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
       const t1 = document.getElementById('telefono').value.trim();
       const p1 = document.getElementById('prefix1').value;
       telefonoAGuardar = `${p1}${t1}`;
+    }
+
+    // ----- REGISTRO PACIENTE / CLIENTE -----
+    if (currentRole === 'cliente') {
+      const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: { full_name: nombre, telefono: telefonoAGuardar },
+          emailRedirectTo: 'https://fysiumapp.es/confirmado.html'
+        }
+      });
+      if (authError) throw new Error(authError.message);
+      if (!authData.user) throw new Error("No se pudo crear el usuario.");
+      if (authData.user?.identities?.length === 0) {
+        throw new Error("Este correo ya está registrado en Fysium. Inicia sesión o recupera tu contraseña.");
+      }
+      await supabaseClient.from('gestion_perfil').update({ rol: 'cliente' }).eq('user_id', authData.user.id);
+      await supabaseClient.from('auth_user').update({ telefono: telefonoAGuardar }).eq('id_supabase', authData.user.id);
     }
 
     // ----- REGISTRO CLÍNICA -----

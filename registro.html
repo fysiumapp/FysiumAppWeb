@@ -19,16 +19,16 @@
     <div class="login-card" style="max-width: 500px;">
       <div class="login-header">
         <a href="index.html"><img src="assets/FysiumApp_logo.png" alt="Fysium Logo" class="login-logo"></a>
-        <h1>Crear Cuenta Profesional</h1>
-        <p>Únete a Fysium y digitaliza tu espacio de trabajo.</p>
+        <h1 id="registroTitulo">Crear Cuenta</h1>
+        <p id="registroSubtitulo">Únete a Fysium y empieza a reservar o gestionar tus citas.</p>
       </div>
-
       <div id="errorBox" class="error-message"></div>
-
       <div class="role-toggle">
+        <button type="button" class="role-btn" id="btnRoleCliente" onclick="setRole('cliente')">Soy Cliente</button>
         <button type="button" class="role-btn active" id="btnRoleFisio" onclick="setRole('fisio')">Soy Profesional</button>
         <button type="button" class="role-btn" id="btnRoleClinica" onclick="setRole('clinica')">Soy Centro</button>
       </div>
+
 
       <form id="registroForm" class="login-form">
         <div class="form-group">
