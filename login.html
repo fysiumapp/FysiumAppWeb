@@ -36,28 +36,29 @@
                 </div>
 
                 <div class="form-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <label for="password">Contraseña</label>
-                        <a href="#" id="forgotPasswordBtn" style="font-size: 0.85rem; color: #0d9488; text-decoration: none;">¿Has olvidado tu contraseña?</a>
-                    </div>
+                    <label for="password">Contraseña</label>
                     <input type="password" id="password" class="form-control" required placeholder="••••••••">
+                    <div class="forgot-wrapper">
+                        <a href="#" id="forgotPasswordBtn" class="forgot-link">¿Has olvidado tu contraseña?</a>
+                    </div>
                 </div>
-
                 <button type="submit" id="submitBtn" class="login-submit-btn">
                     <span id="btnText">Entrar</span>
                     <div id="btnSpinner" class="spinner"></div>
                 </button>
             </form>
-
-            <div class="login-footer" style="margin-bottom: 15px;">
-                <p>¿Aún no tienes cuenta?</p>
-                <div style="margin-top: 6px; display: flex; justify-content: center; gap: 15px; font-size: 0.9rem;">
-                    <a href="registro.html?rol=cliente" style="color:#0d9488; font-weight:bold;">Soy Cliente</a>
-                    <span style="color: #cbd5e1;">|</span>
-                    <a href="registro.html?rol=fisio" style="color:#0d9488; font-weight:bold;">Soy Profesional o Centro</a>
+            <div class="register-prompt-section">
+                <p class="register-prompt-text">¿Aún no tienes cuenta?</p>
+                <div class="register-actions-row">
+                    <a href="registro.html?rol=cliente" class="register-pill-btn">
+                        Soy Cliente
+                    </a>
+                    <a href="registro.html?rol=fisio" class="register-pill-btn">
+                        Soy Profesional o Centro
+                    </a>
                 </div>
             </div>
-            <div class="login-footer">
+            <div class="login-back-wrapper">
                 <a href="index.html" class="back-link">
                     &larr; Volver al inicio
                 </a>
