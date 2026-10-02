@@ -201,8 +201,8 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
       await supabaseClient.from('auth_user').update({ telefono: telefonoAGuardar }).eq('id_supabase', authData.user.id);
     }
 
-    // ----- REGISTRO CLÍNICA -----
-    if (currentRole === 'clinica') {
+    // ----- REGISTRO CENTRO -----
+    else if (currentRole === 'clinica') {
 
       // 1. Crear usuario clínica
       const { data: authC, error: errC } = await supabaseClient.auth.signUp({
