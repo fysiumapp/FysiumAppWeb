@@ -1,34 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no, viewport-fit=cover" />
   <title>FysiumApp</title>
-  <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
-  <style id="expo-reset">
-    /* These styles make the body full-height */
-    html,
-    body {
-      height: 100%;
-      background-color: #f1f5f9;
-    }
 
-    body {
-      overflow: hidden;
-    }
-
-    #root {
-      display: flex;
-      height: 100%;
-      flex: 1;
-      max-width: 800px;
-      margin: 0 auto;
-      box-shadow: 0 0 35px rgba(0, 0, 0, 0.08);
-      background-color: #ffffff;
-    }
-  </style>
+  <!-- Iconos PWA Oficiales -->
   <link rel="manifest" href="/app/manifest.json" />
   <link rel="icon" href="/app/favicon.ico" />
   <link rel="apple-touch-icon" href="/app/icon.png" />
@@ -37,16 +15,36 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="FysiumApp" />
   <meta name="theme-color" content="#2D5D5D" />
+
+  <style id="expo-reset">
+    html, body {
+      height: 100%;
+      background-color: #f1f5f9;
+    }
+    body {
+      overflow: hidden;
+    }
+    #root {
+      display: flex;
+      height: 100%;
+      flex: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      box-shadow: 0 0 35px rgba(0, 0, 0, 0.08);
+      background-color: #ffffff;
+      overflow: hidden;
+    }
+    @media (max-width: 800px) {
+      #root {
+        max-width: 100%;
+        box-shadow: none;
+      }
+    }
+  </style>
 </head>
-
 <body>
-  <!-- Use static rendering with Expo Router to support running without JavaScript. -->
-  <noscript>
-    You need to enable JavaScript to run this app.
-  </noscript>
-  <!-- The root element for your Expo app. -->
+  <noscript>Necesitas habilitar JavaScript para ejecutar esta aplicación.</noscript>
   <div id="root"></div>
-  <script src="/app/_expo/static/js/web/entry-e5bed462e5d4df7bececb6ffd234967d.js" defer></script>
+  <script src="/app/_expo/static/js/web/entry-bd472b315f0c96da4875ed12ffbe4122.js" defer></script>
 </body>
-
 </html>
