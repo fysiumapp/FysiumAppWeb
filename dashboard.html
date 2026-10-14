@@ -127,7 +127,7 @@
 
                     <!-- Modal Añadir Horario -->
                     <div id="addSessionModal" class="modal">
-                        <div class="modal-content">
+                        <div class="modal-content" style="max-width: 460px;">
                             <h3>Nuevo Horario</h3>
                             <div class="form-group" id="groupSelectFisio" style="display: none;">
                                 <label>Profesional</label>
@@ -137,13 +137,13 @@
                                 <label>Día</label>
                                 <input type="date" id="sessionDate" class="form-control">
                             </div>
-                            <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
-                                <div class="form-group">
+                            <div class="form-group" style="display: flex; gap: 12px; align-items: flex-start;">
+                                <div style="flex: 1;">
                                     <label>Hora Inicio</label>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <select id="sessionStartHour" class="form-control" style="flex: 1; text-align: center;"></select>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <select id="sessionStartHour" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;"></select>
                                         <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
-                                        <select id="sessionStartMin" class="form-control" style="flex: 1; text-align: center;">
+                                        <select id="sessionStartMin" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;">
                                             <option value="00">00</option>
                                             <option value="05">05</option>
                                             <option value="10">10</option>
@@ -160,13 +160,12 @@
                                     </div>
                                     <input type="hidden" id="sessionStart">
                                 </div>
-
-                                <div class="form-group">
+                                <div style="flex: 1;">
                                     <label>Hora Fin</label>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <select id="sessionEndHour" class="form-control" style="flex: 1; text-align: center;"></select>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <select id="sessionEndHour" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;"></select>
                                         <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
-                                        <select id="sessionEndMin" class="form-control" style="flex: 1; text-align: center;">
+                                        <select id="sessionEndMin" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;">
                                             <option value="00">00</option>
                                             <option value="05">05</option>
                                             <option value="10">10</option>
@@ -228,9 +227,9 @@
                                 <div style="flex: 1;">
                                     <label>Hora Inicio</label>
                                     <div style="display: flex; align-items: center; gap: 8px;">
-                                        <select id="rutinaStartHour" class="form-control" style="flex: 1; text-align: center;"></select>
+                                        <select id="rutinaStartHour" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;"></select>
                                         <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
-                                        <select id="rutinaStartMin" class="form-control" style="flex: 1; text-align: center;">
+                                        <select id="rutinaStartMin" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;">
                                             <option value="00">00</option>
                                             <option value="05">05</option>
                                             <option value="10">10</option>
@@ -251,9 +250,9 @@
                                 <div style="flex: 1;">
                                     <label>Hora Fin</label>
                                     <div style="display: flex; align-items: center; gap: 8px;">
-                                        <select id="rutinaEndHour" class="form-control" style="flex: 1; text-align: center;"></select>
+                                        <select id="rutinaEndHour" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;"></select>
                                         <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
-                                        <select id="rutinaEndMin" class="form-control" style="flex: 1; text-align: center;">
+                                        <select id="rutinaEndMin" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;">
                                             <option value="00">00</option>
                                             <option value="05">05</option>
                                             <option value="10">10</option>
