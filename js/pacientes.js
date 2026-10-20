@@ -45,7 +45,42 @@ async function obtenerIdsRed() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ... logic (leave intact)
+    // MÁSCARA AUTOMÁTICA DE FECHA DD/MM/AAAA (IDÉNTICA A LA APP MÓVIL)
+    function aplicarMascaraFecha(input) {
+        if (!input) return;
+        input.setAttribute('maxlength', '10');
+        let ultimoValor = input.value || '';
+        if (input.form) {
+            input.form.addEventListener('reset', () => {
+                ultimoValor = '';
+            });
+        }
+        input.addEventListener('input', () => {
+            const texto = input.value;
+            // Si el usuario está borrando caracteres
+            if (texto.length < ultimoValor.length) {
+                if (ultimoValor.endsWith('/') && !texto.endsWith('/')) {
+                    input.value = texto.slice(0, -1);
+                }
+                ultimoValor = input.value;
+                return;
+            }
+            const digitos = texto.replace(/\D/g, '').slice(0, 8);
+            let formateado = '';
+            if (digitos.length <= 2) {
+                formateado = digitos.length === 2 ? `${digitos}/` : digitos;
+            } else if (digitos.length <= 4) {
+                formateado = `${digitos.slice(0, 2)}/${digitos.slice(2)}${digitos.length === 4 ? '/' : ''}`;
+            } else {
+                formateado = `${digitos.slice(0, 2)}/${digitos.slice(2, 4)}/${digitos.slice(4)}`;
+            }
+            input.value = formateado;
+            ultimoValor = formateado;
+        });
+    }
+    // Activamos la máscara en los dos formularios de alta de cliente en la Web
+    aplicarMascaraFecha(document.getElementById('np-dob'));
+    aplicarMascaraFecha(document.getElementById('nuevoFechaNac'));
     // Alta de Paciente
     const form = document.getElementById('newPatientForm');
     form.addEventListener('submit', async (e) => {

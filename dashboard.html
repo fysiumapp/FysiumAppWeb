@@ -101,22 +101,19 @@
                         <div class="calendar-day-view card">
                             <div class="day-header flex-between mb-4" style="flex-wrap: wrap; gap: 10px;">
                                 <h3 id="selectedDayTitle">Selecciona un día</h3>
-                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                    <!-- Botón Añadir Sesión (Antiguo Añadir Libre) -->
-                                    <button id="addSessionBtn" class="primary-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
-                                        <i class="fa-solid fa-plus"></i> Añadir Sesión
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <!-- Botón Añadir Sesión -->
+                                    <button id="addSessionBtn" class="btn-outline-app">
+                                        <i class="fa-solid fa-circle-plus"></i> Añadir Sesión
                                     </button>
-
                                     <!-- Botón Generar Rutina -->
-                                    <button id="generarRutinaBtn" class="primary-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem; background-color: #3b82f6; border-color: #3b82f6;">
-                                        <i class="fa-solid fa-calendar-week"></i> Generar Rutina
+                                    <button id="generarRutinaBtn" class="btn-outline-app btn-outline-rutina">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generar Rutina
                                     </button>
-
                                     <!-- Botón Limpiar Días -->
-                                    <button id="limpiarDiasBtn" class="primary-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem; background-color: #ef4444; border-color: #ef4444;">
-                                        <i class="fa-solid fa-trash-can"></i> Limpiar Días
+                                    <button id="limpiarDiasBtn" class="btn-outline-app btn-outline-danger">
+                                        <i class="fa-regular fa-trash-can"></i> Limpiar Días
                                     </button>
-
                                 </div>
                             </div>
                             <div id="daySessionsList" class="day-sessions-list">
