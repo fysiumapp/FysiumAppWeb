@@ -402,60 +402,66 @@
 
                             <hr style="border:0; border-top:1px solid var(--border); margin: 1.5rem 0;">
 
-                            <!-- Recomendaciones y Ejercicios -->
-                            <div class="mb-4">
-                                <h4><i class="fa-solid fa-dumbbell" style="color: var(--primary)"></i> Recomendaciones y Ejercicios</h4>
-                                <div id="dpRecomendaciones" class="recommendation-grid mt-3">
-                                    <!-- Generado por JS -->
-                                </div>
-                            </div>
+                            <!-- Cuadrícula 2x2: Recomendaciones, Duración, Notas Cliente y Notas Privadas -->
+                            <div class="ficha-plan-grid">
 
-                            <!-- Duración -->
-                            <div class="mb-4">
-                                <h4><i class="fa-solid fa-stopwatch" style="color: var(--primary)"></i> Duración del Plan</h4>
-                                <div class="duration-controls mt-2" id="dpDuracion">
-                                    <div class="duration-group">
-                                        <label>Días</label>
-                                        <div class="btn-group" data-type="días">
-                                            <button class="dur-btn" data-val="1">1</button><button class="dur-btn" data-val="2">2</button><button class="dur-btn" data-val="3">3</button><button class="dur-btn" data-val="4">4</button><button class="dur-btn" data-val="5">5</button><button class="dur-btn" data-val="6">6</button>
-                                        </div>
-                                    </div>
-                                    <div class="duration-group mt-2">
-                                        <label>Semanas</label>
-                                        <div class="btn-group" data-type="semanas">
-                                            <button class="dur-btn active" data-val="1">1</button><button class="dur-btn" data-val="2">2</button><button class="dur-btn" data-val="3">3</button>
-                                        </div>
-                                    </div>
-                                    <div class="duration-group mt-2">
-                                        <label>Meses</label>
-                                        <div class="btn-group" data-type="meses">
-                                            <button class="dur-btn" data-val="1">1</button><button class="dur-btn" data-val="2">2</button><button class="dur-btn" data-val="3">3</button>
-                                        </div>
+                                <!-- 1. Recomendaciones y Ejercicios (Arriba Izquierda) -->
+                                <div class="ficha-box">
+                                    <h4 style="margin: 0 0 10px 0;"><i class="fa-solid fa-dumbbell" style="color: var(--primary)"></i> Recomendaciones y Ejercicios</h4>
+                                    <div id="dpRecomendaciones" class="recommendation-grid">
+                                        <!-- Generado por JS en 2 columnas -->
                                     </div>
                                 </div>
+                                <!-- 2. Duración del Plan con botón Nuevo Plan (Arriba Derecha) -->
+                                <div class="ficha-box">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                        <h4 style="margin: 0;"><i class="fa-solid fa-stopwatch" style="color: var(--primary)"></i> Duración del Plan</h4>
+                                        <button id="btnNuevoPlanWeb" type="button" class="btn-text" style="font-size: 0.75rem; font-weight: 700; color: var(--primary); background: #FFFFFF; border: 1px solid #CBD5E1; padding: 4px 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                            <i class="fa-solid fa-rotate-right"></i> NUEVO PLAN
+                                        </button>
+                                    </div>
+                                    <div class="duration-controls" id="dpDuracion">
+                                        <div class="duration-group">
+                                            <label>Días</label>
+                                            <div class="btn-group" data-type="días">
+                                                <button class="dur-btn" data-val="1">1</button><button class="dur-btn" data-val="2">2</button><button class="dur-btn" data-val="3">3</button><button class="dur-btn" data-val="4">4</button><button class="dur-btn" data-val="5">5</button><button class="dur-btn" data-val="6">6</button>
+                                            </div>
+                                        </div>
+                                        <div class="duration-group mt-2">
+                                            <label>Semanas</label>
+                                            <div class="btn-group" data-type="semanas">
+                                                <button class="dur-btn active" data-val="1">1</button><button class="dur-btn" data-val="2">2</button><button class="dur-btn" data-val="3">3</button>
+                                            </div>
+                                        </div>
+                                        <div class="duration-group mt-2">
+                                            <label>Meses</label>
+                                            <div class="btn-group" data-type="meses">
+                                                <button class="dur-btn" data-val="1">1</button><button class="dur-btn" data-val="2">2</button><button class="dur-btn" data-val="3">3</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 3. Notas para el Cliente (Abajo Izquierda) -->
+                                <div class="ficha-box">
+                                    <h4 style="margin: 0 0 8px 0;"><i class="fa-solid fa-file-signature" style="color: #e74c3c"></i> Notas para el Cliente</h4>
+                                    <textarea id="dpNotas" class="form-control" style="height: 100px; resize: none;" placeholder="Ej: Reposo activo, aplicar frío tras ejercicio..."></textarea>
+                                </div>
+                                <!-- 4. Notas Privadas (Abajo Derecha) -->
+                                <div class="ficha-box private-box" style="margin: 0; display: flex; flex-direction: column;">
+                                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+                                        <h4 style="margin: 0; font-size: 0.92rem;"><i class="fa-solid fa-lock" style="color: #D97706"></i> Notas Privadas</h4>
+                                        <span style="font-size: 0.75rem; color: #92400E; font-weight: 500;">(Solo visibles por ti)</span>
+                                    </div>
+                                    <textarea id="dpTratamiento" class="form-control" style="flex: 1; height: 100px; resize: none; border-color:#FDE68A; background:rgba(255,255,255,0.7)" placeholder="Anota aquí la evolución, notas internas..."></textarea>
+                                </div>
                             </div>
-
-                            <!-- Notas para el paciente -->
-                            <div class="mb-4">
-                                <h4><i class="fa-solid fa-file-signature" style="color: #e74c3c"></i> Notas para el Cliente</h4>
-                                <textarea id="dpNotas" class="form-control mt-2" style="height: 100px; resize: vertical;" placeholder="Ej: Reposo activo, aplicar frío tras ejercicio..."></textarea>
-                            </div>
-
-                            <hr style="border:0; border-top:1px solid var(--border); margin: 1.5rem 0;">
-
-                            <div class="private-box mb-4">
-                                <h4><i class="fa-solid fa-lock" style="color: #D97706"></i> Notas Privadas / Seguimiento</h4>
-                                <p style="font-size: 0.85rem; margin-bottom: 1rem; color: #92400E;">Solo tú puedes ver estas notas.</p>
-                                <textarea id="dpTratamiento" class="form-control" style="height: 150px; resize: vertical; border-color:#FDE68A; background:rgba(255,255,255,0.7)" placeholder="Anota aquí la evolución, notas internas..."></textarea>
-                            </div>
-
-                            <button id="saveTratamientoBtn" class="primary-btn w-100">Guardar Ficha</button>
+                            <!-- Botón Guardar Ficha debajo de los 4 bloques -->
+                            <button id="saveTratamientoBtn" class="primary-btn w-100 mt-4" style="padding: 12px; font-weight: 700; font-size: 0.95rem;">Guardar Ficha</button>
                         </div>
-
-                        <!-- Historial -->
+                        <!-- Historial de Tareas (Columna Derecha) -->
                         <div class="card" style="display: flex; flex-direction: column;">
                             <h4 class="mb-4"><i class="fa-solid fa-clock-rotate-left" style="color: var(--accent)"></i> Historial de Tareas</h4>
-                            <div id="dpHistorialList" style="flex: 1; overflow-y: auto;">
+                            <div id="dpHistorialList" style="flex: 1; overflow-y: auto; max-height: calc(100vh - 220px);">
                                 <p class="text-center text-light mt-4">Cargando historial...</p>
                             </div>
                         </div>
@@ -700,6 +706,31 @@
 
             <button id="addCustomRecBtn" class="primary-btn w-100 mb-2">AÑADIR A LA LISTA</button>
             <button id="closeRecModalBtn" class="secondary-btn w-100" style="background: transparent; color: var(--danger); border: none;">Cancelar</button>
+        </div>
+    </div>
+    <!-- Modal Sustituir Plan Vigente -->
+    <div id="modalSustituirPlanWeb" class="rec-modal-overlay" style="display: none; z-index: 10001;">
+        <div class="rec-modal-content" style="max-width: 420px; border-radius: 20px; padding: 22px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                <div style="width: 38px; height: 38px; border-radius: 10px; background: #FEF3C7; display: flex; align-items: center; justify-content: center; color: #D97706; font-size: 1.2rem;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0; color: var(--text);">Plan en proceso</h4>
+                    <p style="margin: 0; font-size: 0.75rem; color: var(--text-light);">Modificación de pautas activas</p>
+                </div>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text); line-height: 1.4; margin-bottom: 20px;">
+                El plan aún está en proceso, estos cambios sustituirán al plan anterior.
+            </p>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" id="btnCancelarSustituirWeb" class="secondary-btn" style="flex: 1; padding: 10px; border-radius: 10px; background: #F1F5F9; border: none; font-weight: 700; color: #475569; cursor: pointer;">
+                    Cancelar
+                </button>
+                <button type="button" id="btnConfirmarSustituirWeb" class="primary-btn" style="flex: 1; padding: 10px; border-radius: 10px; background: var(--primary); color: white; border: none; font-weight: 700; cursor: pointer;">
+                    Sustituir
+                </button>
+            </div>
         </div>
     </div>
 

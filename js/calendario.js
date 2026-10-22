@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .from('horarios_disponibles')
                 .delete()
                 .in('dia', fechasAborrar)
-                .eq('estado', 'libre')
+                .in('estado', ['libre', 'pausado'])
                 .eq('fisio_id', fisioIdParaGuardar); // Para no borrar las del compañero si eres centro
             if (error) throw error;
             alert("Días vaciados correctamente.");
@@ -307,8 +307,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// ==========================================
+// TIEMPO REAL: Sincronización instantánea con la App móvil
+// ==========================================
+let canalRealtimeCalendario = null;
+function activarRealtimeCalendarioWeb() {
+    if (!currentUser || canalRealtimeCalendario) return;
+    canalRealtimeCalendario = supabaseClient
+        .channel('realtime_calendario_web')
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'horarios_disponibles' },
+            () => {
+                console.log("Cambio detectado en citas desde la App -> Sincronizando Web...");
+                window.cargarCalendarioMes();
+            }
+        )
+        .subscribe();
+}
+
 window.cargarCalendarioMes = async function () {
     if (!currentUser) return;
+    activarRealtimeCalendarioWeb();
 
     const title = document.getElementById('monthTitle');
     const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -341,7 +361,7 @@ window.cargarCalendarioMes = async function () {
     // Borramos los libres pasados (si es centro, para todos sus fisios)
     await supabaseClient.from('horarios_disponibles').delete()
         .in('fisio_id', listaIdsFisios)
-        .eq('estado', 'libre')
+        .in('estado', ['libre', 'pausado'])
         .lt('dia', hoyStr);
 
     // Rango del mes
@@ -452,39 +472,49 @@ function renderizarDiaSeleccionado() {
     list.innerHTML = '';
     citasDelDia.forEach(s => {
         const item = document.createElement('div');
-        item.className = `session-item ${s.estado === 'reservado' ? 'reserved' : ''}`;
-
+        item.className = `session-item ${s.estado === 'reservado' ? 'reserved' : s.estado === 'pausado' ? 'paused' : ''}`;
         // El nombre ya viene inyectado con el arreglo de arriba
         const patientName = s.nombre_paciente || 'Cliente';
-
         let fisioBadge = '';
         if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
             fisioBadge = `<div style="font-size:0.75rem; color:var(--primary); font-weight:600;"><i class="fa-solid fa-user"></i> ${s.nombre_fisio}</div>`;
         }
-
+        const statusHtml = s.estado === 'reservado'
+            ? `RESERVADO: ${patientName}`
+            : s.estado === 'pausado'
+                ? `<span style="color:#d97706; font-weight:700;">PAUSADA ⏸️</span>`
+                : 'LIBRE';
         let content = `
             <div style="flex:1">
                 <div class="session-time">${s.hora} - ${s.hora_fin}</div>
                 ${fisioBadge}
-                <div class="session-status">${s.estado === 'reservado' ? `RESERVADO: ${patientName}` : 'LIBRE'}</div>
+                <div class="session-status">${statusHtml}</div>
                 <div class="session-price">${s.precio > 0 ? `${s.precio}€` : 'A consultar'}</div>
             </div>
         `;
-
         if (s.estado === 'reservado' && s.cliente_id) {
             item.style.cursor = 'pointer';
             item.onclick = () => { if (window.abrirPacienteDesdeCalendario) window.abrirPacienteDesdeCalendario(s.cliente_id); };
             content += `<div style="display:flex; align-items:center; color:var(--primary)"><i class="fa-solid fa-chevron-right"></i></div>`;
         }
-
         if (s.estado === 'libre') {
             content += `
                 <div style="display:flex; flex-direction:column; gap:5px">
                     <button class="icon-btn" onclick="openBookModal('${s.id}')" title="Reservar Manual" style="width:30px; height:30px; background:#e0f2fe; color:#0284c7"><i class="fa-solid fa-user-check" style="font-size:12px"></i></button>
+                    <button class="icon-btn" onclick="togglePauseSession('${s.id}', false)" title="Pausar cita" style="width:30px; height:30px; background:#fef3c7; color:#d97706"><i class="fa-solid fa-pause" style="font-size:12px"></i></button>
+                    <button class="icon-btn" onclick="deleteSession('${s.id}')" title="Borrar" style="width:30px; height:30px; background:#fee2e2; color:var(--danger)"><i class="fa-solid fa-trash" style="font-size:12px"></i></button>
+                </div>
+            `;
+        } else if (s.estado === 'pausado') {
+            content += `
+                <div style="display:flex; flex-direction:column; gap:5px">
+                    <button class="icon-btn" onclick="togglePauseSession('${s.id}', true)" title="Reanudar cita" style="width:30px; height:30px; background:#dcfce7; color:#16a34a"><i class="fa-solid fa-play" style="font-size:12px"></i></button>
                     <button class="icon-btn" onclick="deleteSession('${s.id}')" title="Borrar" style="width:30px; height:30px; background:#fee2e2; color:var(--danger)"><i class="fa-solid fa-trash" style="font-size:12px"></i></button>
                 </div>
             `;
         }
+        item.innerHTML = content;
+        list.appendChild(item);
 
         item.innerHTML = content;
         list.appendChild(item);
@@ -518,6 +548,25 @@ window.openBookModal = function (id) {
         setTimeout(() => buscador.focus(), 100);
     }
 }
+
+window.togglePauseSession = async function (id, estaPausada) {
+    const accion = estaPausada
+        ? "¿Quieres reanudar esta sesión para que vuelva a estar visible para clientes?"
+        : "¿Quieres pausar u ocultar temporalmente esta sesión para clientes?";
+    if (!confirm(accion)) return;
+    const nuevoEstado = estaPausada ? 'libre' : 'pausado';
+    try {
+        const { error } = await supabaseClient
+            .from('horarios_disponibles')
+            .update({ estado: nuevoEstado })
+            .eq('id', id);
+        if (error) throw error;
+        window.cargarCalendarioMes();
+    } catch (error) {
+        alert("Error al actualizar estado: " + error.message);
+    }
+};
+
 
 window.deleteSession = async function (id) {
     if (!confirm("¿Seguro que quieres eliminar esta sesión?")) return;

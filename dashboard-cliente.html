@@ -34,17 +34,8 @@
       <button class="nav-item active" onclick="location.reload()">
         <i class="fa-solid fa-house"></i> Inicio
       </button>
-      <button class="nav-item" onclick="openModal('modalLocalizar')">
-        <i class="fa-solid fa-location-dot"></i> Localizar Profesional
-      </button>
-      <button class="nav-item" onclick="openModal('modalBuscar')">
-        <i class="fa-solid fa-magnifying-glass"></i> Buscar Profesional
-      </button>
       <button class="nav-item" onclick="openModal('modalHistorial')">
         <i class="fa-regular fa-folder-open"></i> Mis Sesiones y Pautas
-      </button>
-      <button class="nav-item" onclick="openModal('modalFavoritos')">
-        <i class="fa-regular fa-heart"></i> Favoritos
       </button>
       <button class="nav-item" onclick="openModal('modalPerfil')">
         <i class="fa-regular fa-user"></i> Mi Perfil
@@ -1805,11 +1796,44 @@
         if (fisioIds.size > 0) {
           const { data: fisios } = await supabaseClient
             .from('fisios')
-            .select('user_id, nombre, clinicas(nombre)')
+            .select('user_id, nombre, foto_perfil_url, clinicas(nombre)')
             .in('user_id', Array.from(fisioIds));
           if (fisios) {
             fisios.forEach(f => { mapFisios[f.user_id] = f; });
           }
+        }
+        // Función para obtener el icono FontAwesome exacto del ejercicio
+        function obtenerIconoEjercicio(e) {
+          const nombre = typeof e === 'string' ? e : (e.nombre || '');
+          const nLow = nombre.toLowerCase();
+
+          if (nLow.includes('estiram')) return 'fa-child-reaching';
+          if (nLow.includes('fuerza')) return 'fa-dumbbell';
+          if (nLow.includes('frío') || nLow.includes('frio') || nLow.includes('hielo')) return 'fa-snowflake';
+          if (nLow.includes('calor')) return 'fa-fire';
+          if (nLow.includes('camin') || nLow.includes('pasos')) return 'fa-person-walking';
+          if (nLow.includes('postur') || nLow.includes('higien')) return 'fa-chair';
+          if (nLow.includes('cardio') || nLow.includes('corr')) return 'fa-person-running';
+          if (nLow.includes('bici')) return 'fa-bicycle';
+          if (nLow.includes('agua') || nLow.includes('hidrat')) return 'fa-droplet';
+          if (nLow.includes('yoga') || nLow.includes('pilates') || nLow.includes('spa')) return 'fa-spa';
+          if (nLow.includes('pelota')) return 'fa-baseball';
+          if (typeof e === 'object' && e.icono) {
+            let ico = e.icono;
+            if (ico.startsWith('fa-')) return ico;
+            if (ico === 'dumbbell') return 'fa-dumbbell';
+            if (ico === 'snowflake') return 'fa-snowflake';
+            if (ico === 'fire') return 'fa-fire';
+            if (ico === 'walk') return 'fa-person-walking';
+            if (ico === 'run') return 'fa-person-running';
+            if (ico === 'human-handsup') return 'fa-child-reaching';
+            if (ico === 'seat-recline-normal') return 'fa-chair';
+            if (ico === 'bike') return 'fa-bicycle';
+            if (ico === 'water') return 'fa-droplet';
+            if (ico === 'star') return 'fa-star';
+            return `fa-${ico}`;
+          }
+          return 'fa-dumbbell';
         }
         // Renderizar Pautas
         const listadoPautas = [];
@@ -1818,10 +1842,11 @@
             if (p.reposo || p.ejercicios) {
               listadoPautas.push({
                 tipo: 'plan',
-                fecha: p.updated_at ? p.updated_at.split('T')[0] : 'Actual',
+                fecha: p.updated_at || p.created_at || 'Actual',
                 fisio_id: p.fisio_id,
                 reposo: p.reposo,
-                ejercicios: p.ejercicios
+                ejercicios: p.ejercicios,
+                duracion_texto: p.duracion_texto
               });
             }
           });
@@ -1830,10 +1855,11 @@
           histData.forEach(h => {
             listadoPautas.push({
               tipo: 'seguimiento',
-              fecha: h.fecha ? h.fecha.split('T')[0] : 'Sesión',
+              fecha: h.fecha || 'Sesión',
               fisio_id: h.fisio_id,
               reposo: h.reposo,
-              ejercicios: h.ejercicios
+              ejercicios: h.ejercicios,
+              duracion_texto: h.duracion_texto
             });
           });
         }
@@ -1842,14 +1868,22 @@
             <div class="empty-state-clean">
               <i class="fa-regular fa-clipboard" style="font-size:32px; color:#CBD5E1; margin-bottom:8px;"></i>
               <p style="font-weight:600; color:#475569; font-size:14px;">No tienes pautas o ejercicios asignados aún.</p>
-              <span style="font-size:12.5px; color:#94A3B8;">Tu fisioterapeuta registrará aquí tus ejercicios y recomendaciones tras tus sesiones.</span>
+              <span style="font-size:12.5px; color:#94A3B8;">Tu profesional registrará aquí tus ejercicios y recomendaciones.</span>
             </div>
           `;
         } else {
           pautasContainer.innerHTML = listadoPautas.map(item => {
             const fisio = mapFisios[item.fisio_id] || {};
-            const nombreFisio = fisio.nombre || 'Tu fisioterapeuta';
-            const fechaFormateada = item.fecha !== 'Actual' ? item.fecha.split('-').reverse().join('/') : 'Plan actual';
+            const nombreFisio = fisio.nombre || 'Profesional';
+            const clinicaFisio = fisio.clinicas?.nombre || 'Especialista Fysium';
+
+            let fechaFormateada = 'Plan actual';
+            if (item.fecha && item.fecha !== 'Actual' && item.fecha !== 'Sesión') {
+              const d = new Date(item.fecha);
+              if (!isNaN(d)) {
+                fechaFormateada = d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+              }
+            }
             let ejerciciosPills = '';
             if (item.ejercicios) {
               try {
@@ -1857,35 +1891,56 @@
                 if (Array.isArray(arr) && arr.length > 0) {
                   ejerciciosPills = arr.map(e => {
                     const nombreEj = typeof e === 'string' ? e : (e.nombre || 'Ejercicio');
-                    const icono = (typeof e === 'object' && e.icono) ? e.icono.replace('md-', 'fa-') : 'fa-dumbbell';
-                    return `<span class="pauta-ejercicio-tag"><i class="fa-solid ${icono}"></i> ${nombreEj}</span>`;
+                    const icono = obtenerIconoEjercicio(e);
+                    return `
+                      <div class="pauta-chip">
+                        <i class="fa-solid ${icono}"></i>
+                        <span>${nombreEj}</span>
+                      </div>
+                    `;
                   }).join('');
                 }
               } catch (e) { }
             }
+            const avatarHtml = fisio.foto_perfil_url
+              ? `<img src="${fisio.foto_perfil_url}" class="pauta-fisio-avatar" style="object-fit:cover;">`
+              : `<div class="pauta-fisio-avatar">${nombreFisio.charAt(0).toUpperCase()}</div>`;
             return `
               <div class="pauta-card">
+                <!-- Cabecera del profesional y badges -->
                 <div class="pauta-card-header">
-                  <div>
-                    <span class="pauta-badge-tipo">${item.tipo === 'plan' ? 'Plan Activo' : 'Sesión Realizada'}</span>
-                    <strong style="color: var(--primary); font-size: 14.5px; margin-left: 6px;">${nombreFisio}</strong>
+                  <div class="pauta-fisio-info">
+                    ${avatarHtml}
+                    <div>
+                      <h4 style="font-size: 15px; font-weight: 700; color: var(--text); margin: 0;">${nombreFisio}</h4>
+                      <p style="font-size: 12px; color: #64748B; margin: 2px 0 0 0;">${clinicaFisio}</p>
+                    </div>
                   </div>
-                  <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">
-                    <i class="fa-regular fa-calendar"></i> ${fechaFormateada}
-                  </span>
+                  <div class="pauta-badges-row">
+                    ${item.tipo === 'plan'
+                ? `<span class="pauta-badge-plan"><i class="fa-solid fa-circle-check"></i> Plan Activo</span>`
+                : `<span class="pauta-badge-sesion"><i class="fa-solid fa-clock-rotate-left"></i> Sesión Realizada</span>`
+              }
+                    <span class="pauta-badge-fecha"><i class="fa-regular fa-calendar-days"></i> ${fechaFormateada}</span>
+                    ${item.duracion_texto ? `<span class="pauta-badge-duracion"><i class="fa-solid fa-stopwatch"></i> ${item.duracion_texto}</span>` : ''}
+                  </div>
                 </div>
+                <!-- Notas del Profesional -->
                 ${item.reposo ? `
                   <div class="pauta-reposo-box">
-                    <i class="fa-solid fa-quote-left" style="color: var(--secondary); margin-right: 6px;"></i>
-                    <span>${item.reposo}</span>
+                    <div class="pauta-reposo-title">
+                      <i class="fa-regular fa-message" style="color: var(--primary);"></i> Pautas y Recomendaciones
+                    </div>
+                    <div class="pauta-reposo-text">${item.reposo}</div>
                   </div>
                 ` : ''}
+                <!-- Ejercicios con iconos estilo App -->
                 ${ejerciciosPills ? `
-                  <div style="margin-top: 10px;">
-                    <div style="font-size: 11.5px; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 6px;">
-                      Ejercicios prescritos:
+                  <div class="pauta-ejercicios-container">
+                    <div class="pauta-ejercicios-title">
+                      <i class="fa-solid fa-dumbbell" style="color: var(--primary);"></i> Ejercicios y Tareas Prescritas:
                     </div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <div class="pauta-chips-grid">
                       ${ejerciciosPills}
                     </div>
                   </div>

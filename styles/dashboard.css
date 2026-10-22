@@ -480,68 +480,173 @@ body {
   color: var(--text-light);
 }
 
-/* Ficha de Paciente - Recomendaciones & Historial */
+/* Badges Tipo Cliente (Manual vs App) */
+.badge-manual {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #F1F5F9;
+  color: #64748B;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid #E2E8F0;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.badge-app {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #EBF2EA;
+  color: #166534;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid #BBF7D0;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.patient-card.is-manual {
+  background-color: #FAFAFA;
+}
+
+
+/* Ficha de Paciente - Distribución 2x2 Compacta */
+.ficha-plan-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .ficha-plan-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ficha-box {
+  display: flex;
+  flex-direction: column;
+}
+
 .recommendation-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 8px;
 }
 
 .rec-card {
-  aspect-ratio: 1;
-  background-color: #F4F7F4;
-  border-radius: 12px;
+  min-height: 38px;
+  height: auto;
+  aspect-ratio: auto;
+  background-color: #F8FAFC;
+  border-radius: 8px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: flex-start;
   align-items: center;
-  border: 2px solid transparent;
+  border: 1px solid #E2E8F0;
   cursor: pointer;
   transition: var(--transition);
-  padding: 5px;
-  text-align: center;
+  padding: 6px 10px;
+  gap: 8px;
+  text-align: left;
 }
 
-.rec-card.active {
-  background-color: var(--secondary);
-  color: white;
-  box-shadow: 0 4px 10px rgba(158, 176, 145, 0.3);
+.rec-card:hover {
+  background-color: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+/* Botón de eliminar en recomendaciones personalizadas */
+.btn-borrar-custom-rec {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  padding: 3px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.btn-borrar-custom-rec:hover {
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.rec-card.active .btn-borrar-custom-rec {
+  color: #166534;
+}
+
+.rec-card.active .btn-borrar-custom-rec:hover {
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.15);
 }
 
 .rec-card i {
-  font-size: 1.5rem;
+  font-size: 1rem;
   color: var(--primary);
-  margin-bottom: 5px;
-}
-
-.rec-card.active i {
-  color: white;
+  margin-bottom: 0;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .rec-card span {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.rec-card.active {
+  background-color: #EBF2EA;
+  border-color: #5B7A56;
+  color: #166534;
+  box-shadow: 0 1px 4px rgba(91, 122, 86, 0.15);
+}
+
+.rec-card.active i {
+  color: #2E7D32;
+}
+
+.rec-card.active span {
+  color: #166534;
+  font-weight: 700;
 }
 
 .duration-group label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-light);
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
 }
 
 .btn-group {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .dur-btn {
   flex: 1;
-  padding: 8px 0;
+  padding: 6px 0;
   background: #F0F4F4;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
@@ -555,29 +660,67 @@ body {
 
 .private-box {
   background-color: #FEF3C7;
-  padding: 15px;
+  padding: 12px;
   border-radius: 10px;
   border: 1px solid #FDE68A;
 }
 
+/* Tarjetas de Historial Modernas e Integradas */
 .history-card {
-  background: white;
-  border-radius: 12px;
+  background: #FFFFFF;
+  border-radius: 16px;
   margin-bottom: 1rem;
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   position: relative;
+  padding: 14px;
 }
 
 .history-header {
-  background: var(--primary);
-  color: white;
-  padding: 10px 15px;
-  border-radius: 11px 11px 0 0;
-  font-weight: 600;
+  background: transparent;
+  color: var(--text);
+  padding: 0 0 10px 0;
+  border-radius: 0;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #F1F5F9;
+  margin-bottom: 10px;
+}
+
+.history-date-badge {
   display: flex;
   align-items: center;
+  gap: 6px;
+  background: #F1F5F9;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.8rem;
 }
+
+.history-delete-btn {
+  position: static;
+  background: #FEE2E2;
+  color: #EF4444;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.history-delete-btn:hover {
+  background: #FCA5A5;
+}
+
 
 .history-body {
   padding: 15px;
@@ -731,6 +874,11 @@ body {
 .session-item.reserved {
   border-left-color: var(--accent);
   background-color: #fff9f8;
+}
+
+.session-item.paused {
+  border-left-color: #d97706;
+  background-color: #fffdf5;
 }
 
 .session-time {
@@ -929,7 +1077,7 @@ body {
 
 
 /* =========================================
-   DISEÑO RESPONSIVO (MÓVILES Y TABLETS)
+  DISEÑO RESPONSIVO (MÓVILES Y TABLETS)
 ========================================= */
 
 /* Estilos para el botón del menú móvil (oculto en PC) */

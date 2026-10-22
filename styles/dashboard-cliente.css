@@ -1678,54 +1678,191 @@ body {
   padding-right: 4px;
 }
 
+/* Tarjetas de Pautas estilo App */
 .pauta-card {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.pauta-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .pauta-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-bottom: 1px solid #F1F5F9;
+  padding-bottom: 12px;
 }
 
-.pauta-badge-tipo {
-  background: #EBF3F2;
-  color: var(--primary);
+.pauta-fisio-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pauta-fisio-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #EBF2EA;
+  color: #166534;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #BBF7D0;
+  flex-shrink: 0;
+}
+
+.pauta-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pauta-badge-plan {
+  background: #EBF2EA;
+  color: #166534;
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
+  padding: 4px 9px;
+  border-radius: 8px;
+  border: 1px solid #BBF7D0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pauta-badge-sesion {
+  background: #F1F5F9;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pauta-badge-fecha {
+  background: #F8FAFC;
+  color: #64748B;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pauta-badge-duracion {
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid #FDE68A;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .pauta-reposo-box {
-  background: #FFFFFF;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.pauta-reposo-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.2px;
+}
+
+.pauta-reposo-text {
   font-size: 13.5px;
   color: var(--text);
   line-height: 1.5;
-  font-style: italic;
+  font-weight: 500;
 }
 
-.pauta-ejercicio-tag {
-  background: #FFFFFF;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #334155;
-  display: inline-flex;
+.pauta-ejercicios-container {
+  margin-top: 2px;
+}
+
+.pauta-ejercicios-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
   align-items: center;
   gap: 6px;
+  letter-spacing: 0.2px;
+}
+
+.pauta-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pauta-chip {
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1E293B;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.15s ease;
+}
+
+.pauta-chip:hover {
+  border-color: #5B7A56;
+  background: #F8FAFC;
+}
+
+.pauta-chip i {
+  color: #2E7D32;
+  font-size: 13px;
+  width: 15px;
+  text-align: center;
 }
 
 .cita-pasada-card {
