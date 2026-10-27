@@ -369,12 +369,12 @@ async function cargarPerfil(userId, userDataBase, authEmail, rol) {
 // AÑADIMOS LA CONFIGURACIÓN DE STRIPE ARRIBA DE LA FUNCIÓN
 const STRIPE_CONFIG = {
     FISIO_AUTONOMO: {
-        priceId: 'price_1TiYRU7mdAjWsY6xnQ8pYN0W', // 12,95€
-        precioTexto: '12,95€'
+        priceId: 'price_1UV77P4hYNog3PlHUKcD8eeV', // 15,95€
+        precioTexto: '15,95€'
     },
     CLINICA: {
-        priceId: 'price_1TlQFx7mdAjWsY6xGJpqKgzT', // 9,95€
-        precioTexto: '9,95€'
+        priceId: 'price_1UV79p4hYNog3PlHBn5syR37', // 11,95€
+        precioTexto: '11,95€'
     }
 };
 
