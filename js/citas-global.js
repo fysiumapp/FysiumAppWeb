@@ -13,6 +13,11 @@ function formatearFechaISO(date) {
 }
 
 window.cargarCitasGlobal = async function () {
+  // Aseguramos la sesión activa al 100%
+  if (!currentUser) {
+    const { data } = await supabaseClient.auth.getSession();
+    if (data && data.session) currentUser = data.session.user;
+  }
   if (!currentUser) return;
 
   const title = document.getElementById('globalMonthTitle');
@@ -236,6 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     if (el) el.addEventListener(event, cb);
   };
+
+  addSafe('navCitasGlobal', 'click', () => {
+    window.cargarCitasGlobal();
+  });
 
   addSafe('globalPrevMonthBtn', 'click', () => {
     globalMonth.setMonth(globalMonth.getMonth() - 1);
