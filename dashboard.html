@@ -34,6 +34,9 @@
                 <button class="nav-item" data-tab="fisios" id="navFisios" style="display: none;">
                     <i class="fa-solid fa-users-gear"></i> Profesionales Asociados
                 </button>
+                <button class="nav-item" data-tab="citas-global" id="navCitasGlobal">
+                    <i class="fa-solid fa-calendar-days"></i> Sesiones Global
+                </button>
                 <button class="nav-item" data-tab="citas">
                     <i class="fa-solid fa-list-check"></i> Todas las Sesiones
                 </button>
@@ -191,12 +194,16 @@
                         </div>
                     </div>
 
-                    <!-- Modal Generar Rutina (Como en la App) -->
+                    <!-- Modal Generar Rutina (Multi-Franja igual que en la App) -->
                     <div id="generarRutinaModal" class="modal">
-                        <div class="modal-content" style="max-width: 500px;">
+                        <div class="modal-content" style="max-width: 540px;">
                             <h3 style="color: var(--primary);">Generador de Rutina</h3>
-                            <p class="text-light mb-4">Crea múltiples sesiones automáticamente definiendo un rango de fechas y días.</p>
-
+                            <p class="text-light mb-4">Crea múltiples sesiones automáticamente definiendo un rango de fechas, días y franjas horarias.</p>
+                            <!-- Selector de Profesional (Solo para Centros / Clínicas) -->
+                            <div class="form-group" id="rutinaGroupSelectFisio" style="display: none;">
+                                <label>¿Para qué profesional?</label>
+                                <select id="rutinaFisioSelect" class="form-control"></select>
+                            </div>
                             <div class="form-group" style="display: flex; gap: 10px;">
                                 <div style="flex: 1;">
                                     <label>Desde Fecha</label>
@@ -220,58 +227,23 @@
                                     <label class="checkbox-dia"><input type="checkbox" value="0"> Dom</label>
                                 </div>
                             </div>
-                            <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
-                                <div style="flex: 1;">
-                                    <label>Hora Inicio</label>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <select id="rutinaStartHour" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;"></select>
-                                        <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
-                                        <select id="rutinaStartMin" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;">
-                                            <option value="00">00</option>
-                                            <option value="05">05</option>
-                                            <option value="10">10</option>
-                                            <option value="15">15</option>
-                                            <option value="20">20</option>
-                                            <option value="25">25</option>
-                                            <option value="30">30</option>
-                                            <option value="35">35</option>
-                                            <option value="40">40</option>
-                                            <option value="45">45</option>
-                                            <option value="50">50</option>
-                                            <option value="55">55</option>
-                                        </select>
-                                    </div>
-                                    <input type="hidden" id="rutinaStartTime">
-                                </div>
-                                <span style="margin-top: 25px;">-</span>
-                                <div style="flex: 1;">
-                                    <label>Hora Fin</label>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <select id="rutinaEndHour" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;"></select>
-                                        <span style="font-weight: bold; font-size: 1.2rem; color: #999;">:</span>
-                                        <select id="rutinaEndMin" class="form-control" style="flex: 1; text-align: center; padding: 0.75rem 0.25rem;">
-                                            <option value="00">00</option>
-                                            <option value="05">05</option>
-                                            <option value="10">10</option>
-                                            <option value="15">15</option>
-                                            <option value="20">20</option>
-                                            <option value="25">25</option>
-                                            <option value="30">30</option>
-                                            <option value="35">35</option>
-                                            <option value="40">40</option>
-                                            <option value="45">45</option>
-                                            <option value="50">50</option>
-                                            <option value="55">55</option>
-                                        </select>
-                                    </div>
-                                    <input type="hidden" id="rutinaEndTime">
-                                </div>
-                            </div>
+                            <!-- Franjas Horarias Dinámicas Diarias -->
                             <div class="form-group">
-                                <label>Precio (€) <span class="text-light">(Opcional)</span></label>
-                                <input type="number" id="rutinaPrice" class="form-control" placeholder="00.00">
+                                <label style="margin-bottom: 8px;">Franjas Horarias Diarias</label>
+                                <div style="display: flex; gap: 8px; align-items: center; font-size: 0.8rem; font-weight: 600; color: #64748B; margin-bottom: 6px; padding: 0 4px;">
+                                    <span style="flex: 1; text-align: center;">Inicio</span>
+                                    <span style="width: 14px;"></span>
+                                    <span style="flex: 1; text-align: center;">Fin</span>
+                                    <span style="width: 95px; text-align: center;">Precio (€)</span>
+                                    <span style="width: 34px;"></span>
+                                </div>
+                                <!-- Lista dinámica de franjas -->
+                                <div id="rutinaFranjasContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 2px;">
+                                </div>
+                                <button type="button" id="rutinaAddFranjaBtn" class="btn-outline-app mt-2" style="width: 100%; border-style: dashed !important; font-size: 0.85rem; padding: 0.55rem; justify-content: center;">
+                                    <i class="fa-solid fa-plus"></i> Añadir otra franja
+                                </button>
                             </div>
-
                             <div class="modal-actions mt-4">
                                 <button id="cancelGenerarRutinaBtn" class="btn-text text-danger">Cancelar</button>
                                 <button id="confirmGenerarRutinaBtn" class="primary-btn">Generar Sesiones</button>
@@ -355,6 +327,59 @@
 
                                 <button class="primary-btn w-100 mt-4" onclick="finalizarReserva()">Confirmar y Reservar</button>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Pestaña: CITAS GLOBAL (CALENDARIO COMPLETO MENSUAL) -->
+                <section id="tab-citas-global" class="tab-pane">
+                    <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+                        <!-- Barra Superior: Controles, Filtros y Navegación -->
+                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.2rem;">
+                            <!-- Navegación de Mes -->
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <button id="globalPrevMonthBtn" class="icon-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                                <h2 id="globalMonthTitle" style="margin: 0; min-width: 200px; text-align: center; color: var(--primary); font-size: 1.4rem;">Cargando...</h2>
+                                <button id="globalNextMonthBtn" class="icon-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                                <button id="globalTodayBtn" class="btn-outline-app" style="padding: 0.35rem 0.8rem; font-size: 0.8rem;">Hoy</button>
+                            </div>
+                            <!-- Filtros y Botón Vista Diaria -->
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <!-- Filtro por Profesional (Para Centros) -->
+                                <select id="globalFisioFilter" class="form-control" style="width: auto; min-width: 190px; padding: 0.45rem 0.75rem; font-size: 0.88rem;">
+                                    <option value="todos">🩺 Todos los Profesionales</option>
+                                </select>
+                                <!-- Filtro por Estado -->
+                                <select id="globalEstadoFilter" class="form-control" style="width: auto; padding: 0.45rem 0.75rem; font-size: 0.88rem;">
+                                    <option value="todos">Todas (Libres y Reservadas)</option>
+                                    <option value="reservado">🔵 Solo Reservadas</option>
+                                    <option value="libre">🟢 Solo Libres</option>
+                                </select>
+                                <button class="btn-outline-app" onclick="document.querySelector('[data-tab=\'calendario\']').click()" style="padding: 0.45rem 0.85rem; font-size: 0.85rem;">
+                                    <i class="fa-solid fa-calendar-day"></i> Vista Diaria
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Leyenda y Contador -->
+                        <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1rem; font-size: 0.85rem; color: #64748B; flex-wrap: wrap;">
+                            <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #10B981; display: inline-block;"></span> Libre</span>
+                            <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #0284C7; display: inline-block;"></span> Reservada</span>
+                            <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #F59E0B; display: inline-block;"></span> Pausada</span>
+                            <span id="globalSummaryCount" style="margin-left: auto; font-weight: 700; color: var(--text-dark);">0 sesiones</span>
+                        </div>
+                        <!-- Cabecera Días de la Semana -->
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); background: #F8FAFC; border: 1px solid #E2E8F0; border-bottom: none; border-radius: 12px 12px 0 0; text-align: center; font-weight: 700; color: #475569; font-size: 0.85rem;">
+                            <div style="padding: 10px 4px;">Lunes</div>
+                            <div style="padding: 10px 4px;">Martes</div>
+                            <div style="padding: 10px 4px;">Miércoles</div>
+                            <div style="padding: 10px 4px;">Jueves</div>
+                            <div style="padding: 10px 4px;">Viernes</div>
+                            <div style="padding: 10px 4px;">Sábado</div>
+                            <div style="padding: 10px 4px;">Domingo</div>
+                        </div>
+                        <!-- Cuadrícula Full-Screen del Mes -->
+                        <div id="globalMonthGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); background: #CBD5E1; gap: 1px; border: 1px solid #CBD5E1; border-radius: 0 0 12px 12px; overflow: hidden;">
+                            <!-- Días generados por JS -->
                         </div>
                     </div>
                 </section>
@@ -773,6 +798,7 @@
     <script src="js/calendario.js"></script>
     <script src="js/pacientes.js"></script>
     <script src="js/citas.js"></script>
+    <script src="js/citas-global.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {

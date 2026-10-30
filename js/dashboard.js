@@ -245,6 +245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // DISPARAR EVENTOS Y RECARGAR SI ES NECESARIO
             if (target === 'calendario' && window.cargarCalendarioMes) window.cargarCalendarioMes();
+            if (target === 'citas-global' && window.cargarCitasGlobal) window.cargarCitasGlobal();
             if (target === 'pacientes' && window.cargarPacientes) window.cargarPacientes();
             if (target === 'citas' && window.cargarTodasLasCitas) window.cargarTodasLasCitas();
         });
@@ -612,6 +613,15 @@ window.cargarFisiosAsociados = async function () {
     if (select) {
         select.innerHTML = fisios.map(f => `<option value="${f.user_id}">${f.nombre}</option>`).join('');
         document.getElementById('groupSelectFisio').style.display = 'block';
+    }
+
+    // Actualizar el selector de fisios en el generador de rutina para centros
+    const selectRutina = document.getElementById('rutinaFisioSelect');
+    if (selectRutina) {
+        selectRutina.innerHTML = '<option value="">-- Selecciona un profesional --</option>' +
+            fisios.map(f => `<option value="${f.user_id}">${f.nombre}</option>`).join('');
+        const groupRutina = document.getElementById('rutinaGroupSelectFisio');
+        if (groupRutina) groupRutina.style.display = 'block';
     }
 
     if (!fisios || fisios.length === 0) {

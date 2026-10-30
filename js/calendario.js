@@ -45,11 +45,105 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // -- LÓGICA CLONADA DE LA APP (GENERAR RUTINA)
-    // ==========================================
+    // -- LÓGICA CLONADA DE LA APP (GENERAR RUTINA MULTI-FRANJA)
+    // ========================================================
+    function agregarFranjaRutinaWeb(inicioPorDefecto, finPorDefecto, precioPorDefecto) {
+        const container = document.getElementById('rutinaFranjasContainer');
+        if (!container) return;
+        let inicio = inicioPorDefecto;
+        let fin = finPorDefecto;
+        let precio = (precioPorDefecto !== undefined && precioPorDefecto !== null) ? precioPorDefecto : '';
+        const filasExistentes = container.querySelectorAll('.rutina-franja-row');
+        if (!inicio || !fin) {
+            if (filasExistentes.length > 0) {
+                const ultimaFila = filasExistentes[filasExistentes.length - 1];
+                const ultimoFin = ultimaFila.querySelector('.rutina-fin').value || '10:00';
+                const ultimoPrecio = ultimaFila.querySelector('.rutina-precio').value || '';
+                inicio = ultimoFin;
+                // Calculamos 1 hora después de la última
+                const [hStr, mStr] = ultimoFin.split(':');
+                const h = parseInt(hStr, 10);
+                const nextH = (h + 1) % 24;
+                fin = `${String(nextH).padStart(2, '0')}:${mStr || '00'}`;
+                precio = ultimoPrecio; // Copia el precio anterior automáticamente
+            } else {
+                inicio = '09:00';
+                fin = '10:00';
+            }
+        }
+        const row = document.createElement('div');
+        row.className = 'rutina-franja-row';
+        row.style.cssText = 'display: flex; gap: 8px; align-items: center; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 6px 10px;';
+        row.innerHTML = `
+            <input type="time" class="form-control rutina-inicio" value="${inicio}" style="flex: 1; padding: 0.45rem 0.4rem; text-align: center; font-weight: 600; font-size: 0.95rem;">
+            <span style="color: #94A3B8; font-weight: bold; font-size: 0.9rem;">→</span>
+            <input type="time" class="form-control rutina-fin" value="${fin}" style="flex: 1; padding: 0.45rem 0.4rem; text-align: center; font-weight: 600; font-size: 0.95rem;">
+            <input type="number" step="0.5" class="form-control rutina-precio" placeholder="00.00" value="${precio}" style="width: 95px; padding: 0.45rem 0.4rem; text-align: center; font-size: 0.95rem;">
+            <button type="button" class="btn-delete-franja" title="Eliminar franja" style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: #FEE2E2; border: none; border-radius: 8px; color: #EF4444; cursor: pointer; transition: all 0.2s;">
+                <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
+            </button>
+        `;
+        // Al cambiar inicio, auto-ajustar fin a 1 hora después
+        const inputInicio = row.querySelector('.rutina-inicio');
+        const inputFin = row.querySelector('.rutina-fin');
+        inputInicio.addEventListener('change', () => {
+            if (inputInicio.value) {
+                const [hStr, mStr] = inputInicio.value.split(':');
+                const h = parseInt(hStr, 10);
+                const nextH = (h + 1) % 24;
+                inputFin.value = `${String(nextH).padStart(2, '0')}:${mStr || '00'}`;
+            }
+        });
+        // Botón borrar fila
+        const btnDel = row.querySelector('.btn-delete-franja');
+        btnDel.addEventListener('click', () => {
+            row.remove();
+            actualizarBotonesEliminarFranja();
+        });
+        container.appendChild(row);
+        actualizarBotonesEliminarFranja();
+    }
+    function actualizarBotonesEliminarFranja() {
+        const container = document.getElementById('rutinaFranjasContainer');
+        if (!container) return;
+        const filas = container.querySelectorAll('.rutina-franja-row');
+        filas.forEach(f => {
+            const btn = f.querySelector('.btn-delete-franja');
+            if (btn) {
+                if (filas.length <= 1) {
+                    btn.style.opacity = '0.3';
+                    btn.style.pointerEvents = 'none';
+                    btn.style.cursor = 'not-allowed';
+                } else {
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                    btn.style.cursor = 'pointer';
+                }
+            }
+        });
+    }
+    addSafeEventListener('rutinaAddFranjaBtn', 'click', () => {
+        agregarFranjaRutinaWeb();
+    });
     addSafeEventListener('generarRutinaBtn', 'click', () => {
         const modal = document.getElementById('generarRutinaModal');
-        if (modal) modal.classList.add('active');
+        if (!modal) return;
+        // Si es clínica/centro, mostrar selector de profesional y sincronizar lista
+        if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+            const groupFisio = document.getElementById('rutinaGroupSelectFisio');
+            const selectRutina = document.getElementById('rutinaFisioSelect');
+            const selectSession = document.getElementById('sessionFisioSelect');
+            if (groupFisio) groupFisio.style.display = 'block';
+            if (selectRutina && selectSession && selectSession.innerHTML && !selectRutina.innerHTML) {
+                selectRutina.innerHTML = selectSession.innerHTML;
+            }
+        }
+        // Si no hay filas, inicializar con la primera (09:00 a 10:00)
+        const container = document.getElementById('rutinaFranjasContainer');
+        if (container && container.children.length === 0) {
+            agregarFranjaRutinaWeb('09:00', '10:00', '');
+        }
+        modal.classList.add('active');
     });
     addSafeEventListener('cancelGenerarRutinaBtn', 'click', () => {
         const modal = document.getElementById('generarRutinaModal');
@@ -59,17 +153,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('confirmGenerarRutinaBtn');
         const startDate = document.getElementById('rutinaStartDate').value;
         const endDate = document.getElementById('rutinaEndDate').value;
-        const startTime = document.getElementById('rutinaStartTime').value;
-        const endTime = document.getElementById('rutinaEndTime').value;
-        const price = document.getElementById('rutinaPrice').value;
         // Recoger días seleccionados (checkboxes)
         const checkboxes = document.querySelectorAll('#rutinaDiasContainer input[type="checkbox"]:checked');
         const diasSeleccionados = Array.from(checkboxes).map(cb => parseInt(cb.value));
-        if (!startDate || !endDate || !startTime || !endTime) {
-            return alert("Debes rellenar las fechas y las horas.");
+        // Recoger todas las franjas horarias configuradas
+        const franjas = [];
+        const filas = document.querySelectorAll('#rutinaFranjasContainer .rutina-franja-row');
+        filas.forEach(fila => {
+            const inicio = fila.querySelector('.rutina-inicio').value;
+            const fin = fila.querySelector('.rutina-fin').value;
+            const precio = fila.querySelector('.rutina-precio').value;
+            if (inicio && fin) {
+                franjas.push({
+                    inicio,
+                    fin,
+                    precio: precio ? parseFloat(precio) : 0
+                });
+            }
+        });
+        if (!startDate || !endDate) {
+            return alert("Debes seleccionar el rango de fechas (Desde y Hasta).");
         }
         if (diasSeleccionados.length === 0) {
             return alert("Selecciona al menos un día de la semana.");
+        }
+        if (franjas.length === 0) {
+            return alert("Debes añadir al menos una franja horaria.");
         }
         btn.textContent = "Generando...";
         btn.disabled = true;
@@ -77,47 +186,52 @@ document.addEventListener('DOMContentLoaded', () => {
             // Lógica para centro o profesional independiente
             let fisioIdParaGuardar = currentUser.id;
             if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
-                const fisioSelect = document.getElementById('sessionFisioSelect'); // El select que ya tienes en el top
-                if (fisioSelect && fisioSelect.value) fisioIdParaGuardar = fisioSelect.value;
+                const selectRutina = document.getElementById('rutinaFisioSelect');
+                if (!selectRutina || !selectRutina.value) {
+                    btn.textContent = "Generar Sesiones";
+                    btn.disabled = false;
+                    return alert("Debes seleccionar para qué profesional son las sesiones.");
+                }
+                fisioIdParaGuardar = selectRutina.value;
             }
             const sesionesAGuardar = [];
-
-            // Lógica exacta de GeneradorRutina.tsx (Bucle fecha a fecha)
+            // Bucle fecha a fecha (idéntico a la app móvil)
             let fechaActual = new Date(startDate);
             fechaActual.setHours(0, 0, 0, 0);
             const fechaFin = new Date(endDate);
             fechaFin.setHours(0, 0, 0, 0);
             while (fechaActual <= fechaFin) {
-                // Comprobamos si el día de la semana está seleccionado
                 if (diasSeleccionados.includes(fechaActual.getDay())) {
                     const y = fechaActual.getFullYear();
                     const m = String(fechaActual.getMonth() + 1).padStart(2, '0');
                     const d = String(fechaActual.getDate()).padStart(2, '0');
                     const diaStr = `${y}-${m}-${d}`;
-                    sesionesAGuardar.push({
-                        fisio_id: fisioIdParaGuardar,
-                        dia: diaStr,
-                        hora: startTime,
-                        hora_fin: endTime,
-                        precio: price ? parseFloat(price) : 0,
-                        estado: 'libre'
+                    franjas.forEach(f => {
+                        sesionesAGuardar.push({
+                            fisio_id: fisioIdParaGuardar,
+                            dia: diaStr,
+                            hora: f.inicio,
+                            hora_fin: f.fin,
+                            precio: f.precio,
+                            estado: 'libre'
+                        });
                     });
                 }
                 fechaActual.setDate(fechaActual.getDate() + 1);
             }
             if (sesionesAGuardar.length === 0) {
-                alert("No se ha generado ninguna sesión. Revisa el rango de fechas.");
+                alert("No se ha generado ninguna sesión. Revisa que el rango de fechas coincida con los días seleccionados.");
                 return;
             }
             // Inserción en lote en Supabase
             const { error } = await supabaseClient.from('horarios_disponibles').insert(sesionesAGuardar);
             if (error) throw error;
-            alert(`¡Éxito! Se han publicado ${sesionesAGuardar.length} sesiones.`);
+            alert(`¡Éxito! Se han publicado ${sesionesAGuardar.length} sesiones en tu calendario.`);
             document.getElementById('generarRutinaModal').classList.remove('active');
             window.cargarCalendarioMes(); // Refrescar calendario
         } catch (error) {
             console.error("Error al generar rutina:", error);
-            alert("No se pudo generar la rutina.");
+            alert("No se pudo generar la rutina: " + (error.message || error));
         } finally {
             btn.textContent = "Generar Sesiones";
             btn.disabled = false;
@@ -894,4 +1008,13 @@ window.finalizarReserva = async function () {
 
 window.seleccionarPaciente = function (nombre) {
     document.getElementById('manualPatientName').value = nombre;
+};
+
+// Salto desde la vista global al día seleccionado
+window.irADiaCalendario = function (fecha) {
+    selectedDate = new Date(fecha);
+    currentMonth = new Date(fecha);
+    window.cargarCalendarioMes();
+    const navCal = document.querySelector('.nav-item[data-tab="calendario"]');
+    if (navCal) navCal.click();
 };
