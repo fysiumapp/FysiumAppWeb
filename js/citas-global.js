@@ -13,52 +13,47 @@ function formatearFechaISO(date) {
 }
 
 window.cargarCitasGlobal = async function () {
-  // Aseguramos la sesión activa al 100%
+  // 1. Asegurar sesión activa
   if (!currentUser) {
     const { data } = await supabaseClient.auth.getSession();
     if (data && data.session) currentUser = data.session.user;
   }
   if (!currentUser) return;
-
+  // 2. Colocar título de mes de inmediato (adiós "Cargando...")
   const title = document.getElementById('globalMonthTitle');
   const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   if (title) title.textContent = `${monthNames[globalMonth.getMonth()]} ${globalMonth.getFullYear()}`;
-
   let listaIdsFisios = [currentUser.id];
   globalFisiosMap = {};
-
-  // 1. Si es clínica, cargamos todos sus profesionales
+  const selectFisio = document.getElementById('globalFisioFilter');
+  // 3. SOLO SI ES CLÍNICA: mostramos el filtro y cargamos a sus profesionales
   if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
     const { data: fisiosData } = await supabaseClient
       .from('fisios')
       .select('user_id, nombre')
       .eq('clinica_id', window.currentProfileData.clinicaDataId);
-
     if (fisiosData && fisiosData.length > 0) {
       listaIdsFisios = fisiosData.map(f => f.user_id);
       fisiosData.forEach(f => { globalFisiosMap[f.user_id] = f.nombre; });
-
-      // Rellenar el filtro desplegable de profesionales
-      const selectFisio = document.getElementById('globalFisioFilter');
-      if (selectFisio && selectFisio.options.length <= 1) {
-        fisiosData.forEach(f => {
-          const opt = document.createElement('option');
-          opt.value = f.user_id;
-          opt.textContent = `${f.nombre}`;
-          selectFisio.appendChild(opt);
-        });
+      if (selectFisio) {
+        selectFisio.style.display = 'inline-block'; // Se muestra SOLO en centros
+        if (selectFisio.options.length <= 1) {
+          fisiosData.forEach(f => {
+            const opt = document.createElement('option');
+            opt.value = f.user_id;
+            opt.textContent = `🩺 ${f.nombre}`;
+            selectFisio.appendChild(opt);
+          });
+        }
       }
     }
   } else {
-    // Si es profesional independiente, ocultamos el filtro de profesionales
-    const selectFisio = document.getElementById('globalFisioFilter');
+    // PROFESIONAL INDEPENDIENTE: Filtro 100% oculto
     if (selectFisio) selectFisio.style.display = 'none';
   }
-
-  // 2. Consultar citas del mes completo
+  // 4. Consultar citas del mes completo
   const startOfMonth = new Date(globalMonth.getFullYear(), globalMonth.getMonth(), 1);
   const endOfMonth = new Date(globalMonth.getFullYear(), globalMonth.getMonth() + 1, 0);
-
   const { data, error } = await supabaseClient
     .from('horarios_disponibles')
     .select('*')

@@ -34,7 +34,7 @@
                 <button class="nav-item" data-tab="fisios" id="navFisios" style="display: none;">
                     <i class="fa-solid fa-users-gear"></i> Profesionales Asociados
                 </button>
-                <button class="nav-item" data-tab="citas-global" id="navCitasGlobal">
+                <button class="nav-item" data-tab="citas-global" id="navCitasGlobal" onclick="if(window.cargarCitasGlobal) window.cargarCitasGlobal()">
                     <i class="fa-solid fa-calendar-days"></i> Sesiones Global
                 </button>
                 <button class="nav-item" data-tab="citas">
@@ -346,8 +346,8 @@
                             <!-- Filtros y Botón Vista Diaria -->
                             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                 <!-- Filtro por Profesional (Para Centros) -->
-                                <select id="globalFisioFilter" class="form-control" style="width: auto; min-width: 190px; padding: 0.45rem 0.75rem; font-size: 0.88rem;">
-                                    <option value="todos">🩺 Todos los Profesionales</option>
+                                <select id="globalFisioFilter" class="form-control" style="display: none; width: auto; min-width: 190px; padding: 0.45rem 0.75rem; font-size: 0.88rem;">
+                                    <option value="todos">Todos los Profesionales</option>
                                 </select>
                                 <!-- Filtro por Estado -->
                                 <select id="globalEstadoFilter" class="form-control" style="width: auto; padding: 0.45rem 0.75rem; font-size: 0.88rem;">
