@@ -1152,3 +1152,65 @@ body {
     display: block;
   }
 }
+
+/* BOTONES DE ACCIÓN MODERNOS EN FICHA DE PACIENTE */
+.patient-header-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-action-pill {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.btn-action-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Modo 'Retirar de mis clientes' */
+.btn-action-pill.is-remove {
+  background-color: #FEF2F2 !important;
+  color: #DC2626 !important;
+  border-color: #FECACA !important;
+}
+
+.btn-action-pill.is-remove:hover {
+  background-color: #FEE2E2 !important;
+}
+
+/* Modo 'Añadir a mis clientes' */
+.btn-action-pill.is-add {
+  background-color: #F0FDF4 !important;
+  color: #16A34A !important;
+  border-color: #BBF7D0 !important;
+}
+
+.btn-action-pill.is-add:hover {
+  background-color: #DCFCE7 !important;
+}
+
+/* Modo 'Eliminar definitivamente' */
+.btn-action-danger {
+  background-color: #FFF1F2 !important;
+  color: #E11D48 !important;
+  border-color: #FDA4AF !important;
+}
+
+.btn-action-danger:hover {
+  background-color: #FFE4E6 !important;
+}

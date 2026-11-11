@@ -600,25 +600,47 @@ window.cargarFichaPaciente = async function (userObj) {
     document.getElementById('tab-pacientes').classList.remove('active');
     document.getElementById('tab-detalle-paciente').classList.add('active');
 
-    // Comprobar estado de activo para configurar el botón de favorito
-    const rel = window.misPacientesRel ? window.misPacientesRel.find(r => r.cliente_id === currentPatientId && r.fisio_id === currentUser.id) : null;
+    // Comprobar estado de activo para configurar el botón de favorito (consultando a memoria o directamente a Supabase)
+    let esActivo = false;
+    let rel = window.misPacientesRel ? window.misPacientesRel.find(r => r.cliente_id === currentPatientId && r.fisio_id === currentUser.id) : null;
+    if (rel) {
+        esActivo = rel.activo;
+    } else {
+        // Si venimos directo del calendario y la memoria aún no cargó, consultar directamente a la base de datos:
+        let listaIdsFisios = [currentUser.id];
+        if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+            const { data: fData } = await supabaseClient.from('fisios').select('user_id').eq('clinica_id', window.currentProfileData.clinicaDataId);
+            if (fData) fData.forEach(f => listaIdsFisios.push(f.user_id));
+        }
+        const { data: relDb } = await supabaseClient
+            .from('mis_pacientes')
+            .select('activo, fisio_id')
+            .eq('cliente_id', currentPatientId)
+            .in('fisio_id', listaIdsFisios)
+            .eq('activo', true)
+            .limit(1)
+            .maybeSingle();
+        if (relDb) {
+            esActivo = true;
+            if (!window.misPacientesRel) window.misPacientesRel = [];
+            window.misPacientesRel.push({ cliente_id: currentPatientId, activo: true, fisio_id: relDb.fisio_id });
+        }
+    }
     const toggleBtn = document.getElementById('quitarPacienteBtn');
-
-    if (rel && rel.activo) {
+    if (esActivo) {
         toggleBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Retirar de mis clientes';
-        toggleBtn.style.color = '#e74c3c';
+        toggleBtn.className = 'btn-action-pill is-remove';
         toggleBtn.dataset.action = 'remove';
     } else {
         toggleBtn.innerHTML = '<i class="fa-solid fa-heart"></i> Añadir a mis clientes';
-        toggleBtn.style.color = 'var(--primary)';
+        toggleBtn.className = 'btn-action-pill is-add';
         toggleBtn.dataset.action = 'add';
     }
-
     // Poblar info con distinción Manual vs App
     const esManual = Boolean(userObj.es_fantasma || (userObj.email && userObj.email.includes('@fysium.app')));
     const btnEliminarManual = document.getElementById('eliminarPacienteManualBtn');
     if (btnEliminarManual) {
-        btnEliminarManual.style.display = esManual ? 'inline-block' : 'none';
+        btnEliminarManual.style.display = esManual ? 'inline-flex' : 'none';
     }
     const badgeFichaHtml = esManual
         ? `<span class="badge-manual"><i class="fa-regular fa-clipboard"></i> Manual</span>`
