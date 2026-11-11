@@ -639,8 +639,49 @@ window.cargarFichaPaciente = async function (userObj) {
     // Poblar info con distinción Manual vs App
     const esManual = Boolean(userObj.es_fantasma || (userObj.email && userObj.email.includes('@fysium.app')));
     const btnEliminarManual = document.getElementById('eliminarPacienteManualBtn');
+    // CONTROL DE PERMISOS: Solo la clínica o el fisio creador pueden eliminar definitivamente
+    let puedeEliminar = false;
+    if (esManual) {
+        if (window.currentProfileData && window.currentProfileData.rol === 'clinica') {
+            puedeEliminar = true; // La clínica puede borrar cualquier cliente manual de su centro
+        } else {
+            // Obtenemos todos los IDs de la red del centro (el centro + todos sus fisios)
+            let listaRedFisios = [currentUser.id];
+            if (window.currentProfileData && window.currentProfileData.rol === 'fisio') {
+                const { data: misDatosFisio } = await supabaseClient.from('fisios').select('clinica_id').eq('user_id', currentUser.id).single();
+                if (misDatosFisio?.clinica_id) {
+                    const { data: datosClinica } = await supabaseClient.from('clinicas').select('user_id').eq('id', misDatosFisio.clinica_id).single();
+                    if (datosClinica?.user_id) listaRedFisios.push(datosClinica.user_id);
+                    const { data: otrosFisios } = await supabaseClient.from('fisios').select('user_id').eq('clinica_id', misDatosFisio.clinica_id);
+                    if (otrosFisios) otrosFisios.forEach(f => listaRedFisios.push(f.user_id));
+                }
+            }
+            // Comprobar quién fue el creador original por fecha real de creación (created_at ASC)
+            const { data: rels } = await supabaseClient
+                .from('mis_pacientes')
+                .select('fisio_id, created_at')
+                .eq('cliente_id', currentPatientId)
+                .in('fisio_id', listaRedFisios)
+                .order('created_at', { ascending: true });
+            if (rels && rels.length > 0) {
+                // Solo si el primer registro histórico de la clínica pertenece al usuario actual
+                puedeEliminar = (rels[0].fisio_id === currentUser.id);
+            } else {
+                // Si no tiene fila en mis_pacientes, comprobar citas
+                const { data: citas } = await supabaseClient
+                    .from('horarios_disponibles')
+                    .select('fisio_id')
+                    .eq('cliente_id', currentPatientId)
+                    .order('created_at', { ascending: true })
+                    .limit(1);
+                if (citas && citas.length > 0) {
+                    puedeEliminar = (citas[0].fisio_id === currentUser.id);
+                }
+            }
+        }
+    }
     if (btnEliminarManual) {
-        btnEliminarManual.style.display = esManual ? 'inline-flex' : 'none';
+        btnEliminarManual.style.display = puedeEliminar ? 'inline-flex' : 'none';
     }
     const badgeFichaHtml = esManual
         ? `<span class="badge-manual"><i class="fa-regular fa-clipboard"></i> Manual</span>`
@@ -928,7 +969,15 @@ document.getElementById('quitarPacienteBtn').addEventListener('click', async () 
 // ELIMINAR PACIENTE MANUAL DEFINITIVAMENTE
 document.getElementById('eliminarPacienteManualBtn')?.addEventListener('click', async () => {
     if (!currentPatientId) return;
-    if (!confirm("⚠️ ¿Estás seguro de ELIMINAR a este paciente manual de forma DEFINITIVA?\n\nSe borrará su ficha por completo y sus citas quedarán libres.")) {
+    // Detectar si está en un entorno de clínica/centro
+    const tieneCentro = Boolean(
+        (window.currentProfileData && window.currentProfileData.rol === 'clinica') ||
+        (window.currentProfileData && window.currentProfileData.clinicaDataId)
+    );
+    const mensajeConfirm = tieneCentro
+        ? "⚠️ ¿Estás seguro de ELIMINAR a este paciente definitivamente?\n\nAl formar parte de un centro, este cliente se borrará de la base de datos de TODOS los profesionales que lo tengan guardado en su lista y sus citas quedarán libres."
+        : "⚠️ ¿Estás seguro de ELIMINAR a este paciente manual de forma DEFINITIVA?\n\nSe borrará su ficha por completo y sus citas quedarán libres.";
+    if (!confirm(mensajeConfirm)) {
         return;
     }
     try {
