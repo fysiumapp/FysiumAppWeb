@@ -155,28 +155,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Búsqueda
     document.getElementById('searchPatientInput').addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase();
-
-        if (val.trim() === '') {
-            // Mostrar solo activos si no hay búsqueda
-            const activos = window.allMyPatients.filter(u => {
-                const rel = window.misPacientesRel.find(r => r.cliente_id === u.id_supabase);
-                return rel && rel.activo;
-            });
-            window.renderizarPacientesList(activos);
+        const val = e.target.value.toLowerCase().trim();
+        if (val === '') {
+            // Si el buscador se borra, restaurar la vista completa por grupos
+            if (window.cargarPacientes) window.cargarPacientes();
         } else {
-            // Mostrar cualquier paciente histórico (activo o inactivo) que coincida
-            const filtrados = window.allMyPatients.filter(u => {
+            // Filtrar todos los pacientes históricos y activos que coincidan
+            const filtrados = (window.allMyPatients || []).filter(u => {
                 return (u.username || '').toLowerCase().includes(val);
             });
             window.renderizarPacientesList(filtrados);
         }
     });
-
-    // Volver a pacientes
+    // Volver a pacientes (arreglado: vuelve y recarga la lista de inmediato)
     document.getElementById('backToPatientsBtn').addEventListener('click', () => {
         document.getElementById('tab-detalle-paciente').classList.remove('active');
         document.getElementById('tab-pacientes').classList.add('active');
+        if (window.cargarPacientes) {
+            window.cargarPacientes();
+        }
     });
 
     // Control de Duración
@@ -444,20 +441,17 @@ function renderRecommendationsGrid() {
 }
 
 
-window.renderizarPacientesList = function (grupos) {
+window.renderizarPacientesList = function (data) {
     const list = document.getElementById('patientsList');
     list.innerHTML = '';
-
     const renderizarSeccion = (titulo, listaPacientes) => {
         if (!listaPacientes || listaPacientes.length === 0) return;
-
         const h3 = document.createElement('h3');
         h3.className = 'section-title';
         h3.style.marginTop = '20px';
         h3.style.color = 'var(--primary)';
         h3.textContent = titulo;
         list.appendChild(h3);
-
         listaPacientes.forEach(u => {
             const esManual = Boolean(u.es_fantasma || (u.email && u.email.includes('@fysium.app')));
             const card = document.createElement('div');
@@ -486,17 +480,24 @@ window.renderizarPacientesList = function (grupos) {
             list.appendChild(card);
         });
     };
-
-    // Renderizar Mis Pacientes primero
-    renderizarSeccion('Mis Clientes', grupos['Mis Clientes']);
-
-    // Renderizar Clínica después
-    renderizarSeccion('Clientes del Centro', grupos['Clientes del Centro']);
-
-    // Renderizar resto de fisios
-    Object.keys(grupos['otros']).forEach(nombreFisio => {
-        renderizarSeccion(nombreFisio, grupos['otros'][nombreFisio]);
-    });
+    // SI ES UN ARRAY (VIENE DEL BUSCADOR):
+    if (Array.isArray(data)) {
+        if (data.length === 0) {
+            list.innerHTML = '<p class="text-center text-light py-4">No se encontraron clientes con ese nombre.</p>';
+            return;
+        }
+        renderizarSeccion('Resultados de búsqueda', data);
+        return;
+    }
+    // SI ES UN OBJETO CON GRUPOS (VISTA NORMAL COMPLETA):
+    const grupos = data || { 'Mis Clientes': [], 'Clientes del Centro': [], 'otros': {} };
+    if (grupos['Mis Clientes']) renderizarSeccion('Mis Clientes', grupos['Mis Clientes']);
+    if (grupos['Clientes del Centro']) renderizarSeccion('Clientes del Centro', grupos['Clientes del Centro']);
+    if (grupos['otros']) {
+        Object.keys(grupos['otros']).forEach(nombreFisio => {
+            renderizarSeccion(nombreFisio, grupos['otros'][nombreFisio]);
+        });
+    }
 };
 
 window.cargarPacientes = async function () {
@@ -615,6 +616,10 @@ window.cargarFichaPaciente = async function (userObj) {
 
     // Poblar info con distinción Manual vs App
     const esManual = Boolean(userObj.es_fantasma || (userObj.email && userObj.email.includes('@fysium.app')));
+    const btnEliminarManual = document.getElementById('eliminarPacienteManualBtn');
+    if (btnEliminarManual) {
+        btnEliminarManual.style.display = esManual ? 'inline-block' : 'none';
+    }
     const badgeFichaHtml = esManual
         ? `<span class="badge-manual"><i class="fa-regular fa-clipboard"></i> Manual</span>`
         : `<span class="badge-app"><i class="fa-solid fa-mobile-screen-button"></i> App</span>`;
@@ -895,5 +900,42 @@ document.getElementById('quitarPacienteBtn').addEventListener('click', async () 
             console.error(error);
             alert("Error al añadir al cliente: " + error.message);
         }
+    }
+});
+
+// ELIMINAR PACIENTE MANUAL DEFINITIVAMENTE
+document.getElementById('eliminarPacienteManualBtn')?.addEventListener('click', async () => {
+    if (!currentPatientId) return;
+    if (!confirm("⚠️ ¿Estás seguro de ELIMINAR a este paciente manual de forma DEFINITIVA?\n\nSe borrará su ficha por completo y sus citas quedarán libres.")) {
+        return;
+    }
+    try {
+        const hoyStr = new Date().toISOString().split('T')[0];
+        // 1. Liberar citas futuras que tuviera este paciente
+        await supabaseClient
+            .from('horarios_disponibles')
+            .update({ estado: 'libre', cliente_id: null, nombre_paciente: null, motivo: null })
+            .eq('cliente_id', currentPatientId)
+            .gte('dia', hoyStr)
+            .eq('estado', 'reservado');
+        // 2. Borrar relación en mis_pacientes
+        await supabaseClient
+            .from('mis_pacientes')
+            .delete()
+            .eq('cliente_id', currentPatientId);
+        // 3. Borrar el usuario de auth_user
+        const { error } = await supabaseClient
+            .from('auth_user')
+            .delete()
+            .eq('id_supabase', currentPatientId);
+        if (error) throw error;
+        alert("Paciente manual eliminado correctamente.");
+        // Volver a la pestaña de clientes
+        document.getElementById('tab-detalle-paciente').classList.remove('active');
+        document.getElementById('tab-pacientes').classList.add('active');
+        if (window.cargarPacientes) window.cargarPacientes();
+    } catch (error) {
+        console.error(error);
+        alert("Error al eliminar paciente: " + error.message);
     }
 });

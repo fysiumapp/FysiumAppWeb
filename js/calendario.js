@@ -606,10 +606,19 @@ function renderizarDiaSeleccionado() {
                 <div class="session-price">${s.precio > 0 ? `${s.precio}€` : 'A consultar'}</div>
             </div>
         `;
-        if (s.estado === 'reservado' && s.cliente_id) {
+        if (s.estado === 'reservado') {
             item.style.cursor = 'pointer';
-            item.onclick = () => { if (window.abrirPacienteDesdeCalendario) window.abrirPacienteDesdeCalendario(s.cliente_id); };
-            content += `<div style="display:flex; align-items:center; color:var(--primary)"><i class="fa-solid fa-chevron-right"></i></div>`;
+            if (s.cliente_id) {
+                item.onclick = () => { if (window.abrirPacienteDesdeCalendario) window.abrirPacienteDesdeCalendario(s.cliente_id); };
+            }
+            content += `
+                <div style="display:flex; align-items:center; gap:8px">
+                    <button class="icon-btn" onclick="event.stopPropagation(); cancelarCitaReservada('${s.id}')" title="Cancelar / Liberar cita" style="width:30px; height:30px; background:#fee2e2; color:var(--danger)">
+                        <i class="fa-solid fa-calendar-xmark" style="font-size:12px"></i>
+                    </button>
+                    <div style="color:var(--primary)"><i class="fa-solid fa-chevron-right"></i></div>
+                </div>
+            `;
         }
         if (s.estado === 'libre') {
             content += `
@@ -697,6 +706,26 @@ window.deleteSession = async function (id) {
         window.cargarCalendarioMes();
     }
 }
+
+window.cancelarCitaReservada = async function (id) {
+    if (!confirm("¿Deseas cancelar esta reserva y dejar el hueco libre de nuevo en el calendario?")) return;
+    try {
+        const { error } = await supabaseClient
+            .from('horarios_disponibles')
+            .update({
+                estado: 'libre',
+                cliente_id: null,
+                nombre_paciente: null,
+                motivo: null
+            })
+            .eq('id', id);
+        if (error) throw error;
+        alert("Sesión cancelada y liberada con éxito.");
+        window.cargarCalendarioMes();
+    } catch (err) {
+        alert("Error al cancelar la sesión: " + err.message);
+    }
+};
 
 async function cargarPacientesParaModal() {
     const lista = document.getElementById('listaPacientesGuardados');
